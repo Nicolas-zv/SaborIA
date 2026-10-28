@@ -57,4 +57,5 @@ Para garantizar la trazabilidad exigida en la rúbrica de evaluación (20 puntos
 - `docs: documentar flujo de colaboracion y contribuciones` (`2ffff52` - *Etapa 1*)
 - `feat: implementar normalizacion de reseñas` (`3cf1347` - *Etapa 2*)
 - `feat: agregar tokenizacion de reseñas` (`8f2432f` - *Etapa 2*)
-- `feat: implementar vectorizacion tfidf` (*Etapa 3*)
+- `feat: implementar vectorizacion tfidf` (`474c311` - *Etapa 3*)
+- `feat: comparar unigramas y bigramas` (*Etapa 3*)
