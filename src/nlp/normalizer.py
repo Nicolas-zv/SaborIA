@@ -9,7 +9,7 @@ from typing import Dict, List, Optional
 from sklearn.base import BaseEstimator, TransformerMixin
 
 # Diccionario de emojis y emoticonos frecuentes en reseñas gastronómicas con su carga de polaridad
-EMOJI_SENTIMENT_MAP: Dict[str, str] = {
+MAPA_SENTIMIENTO_EMOJIS: Dict[str, str] = {
     # Emociones positivas / delicia
     "😋": " emoji_delicioso ",
     "🤤": " emoji_delicioso ",
@@ -41,44 +41,51 @@ EMOJI_SENTIMENT_MAP: Dict[str, str] = {
 }
 
 
-class TextNormalizer(BaseEstimator, TransformerMixin):
+class NormalizadorTexto(BaseEstimator, TransformerMixin):
     """
     Transformador de normalización de texto compatible con Scikit-learn Pipeline.
 
     Parámetros:
     -----------
-    to_lower : bool, default=True
+    a_minusculas : bool, default=True
         Convierte todo el texto a minúsculas para unificar variantes ortográficas.
-    remove_accents : bool, default=True
+    eliminar_tildes : bool, default=True
         Elimina tildes y diacríticos (ej. 'pésimo' -> 'pesimo') para evitar
         dispersión del vocabulario debido a faltas ortográficas comunes en reseñas web.
-    handle_emojis : bool, default=True
+    manejar_emojis : bool, default=True
         Traduce emojis y emoticonos a tokens semánticos descriptivos
         (ej. '😋' -> 'emoji_delicioso') para no perder la fuerte señal de polaridad.
-    normalize_punctuation : bool, default=True
+    normalizar_puntuacion : bool, default=True
         Reduce signos de exclamación/interrogación repetidos (ej. '!!!!!' -> '!!')
         para conservar el énfasis emocional sin crear tokens infinitos.
-    remove_urls_mentions : bool, default=True
+    eliminar_urls_menciones : bool, default=True
         Remueve URLs, correos y menciones (@usuario) que representan ruido.
-    remove_numbers : bool, default=True
+    eliminar_numeros : bool, default=True
         Elimina dígitos numéricos no informativos.
     """
 
     def __init__(
         self,
-        to_lower: bool = True,
-        remove_accents: bool = True,
-        handle_emojis: bool = True,
-        normalize_punctuation: bool = True,
-        remove_urls_mentions: bool = True,
-        remove_numbers: bool = True,
+        a_minusculas: bool = True,
+        eliminar_tildes: bool = True,
+        manejar_emojis: bool = True,
+        normalizar_puntuacion: bool = True,
+        eliminar_urls_menciones: bool = True,
+        eliminar_numeros: bool = True,
+        # Parámetros en inglés para retrocompatibilidad
+        to_lower: Optional[bool] = None,
+        remove_accents: Optional[bool] = None,
+        handle_emojis: Optional[bool] = None,
+        normalize_punctuation: Optional[bool] = None,
+        remove_urls_mentions: Optional[bool] = None,
+        remove_numbers: Optional[bool] = None,
     ):
-        self.to_lower = to_lower
-        self.remove_accents = remove_accents
-        self.handle_emojis = handle_emojis
-        self.normalize_punctuation = normalize_punctuation
-        self.remove_urls_mentions = remove_urls_mentions
-        self.remove_numbers = remove_numbers
+        self.a_minusculas = to_lower if to_lower is not None else a_minusculas
+        self.eliminar_tildes = remove_accents if remove_accents is not None else eliminar_tildes
+        self.manejar_emojis = handle_emojis if handle_emojis is not None else manejar_emojis
+        self.normalizar_puntuacion = normalize_punctuation if normalize_punctuation is not None else normalizar_puntuacion
+        self.eliminar_urls_menciones = remove_urls_mentions if remove_urls_mentions is not None else eliminar_urls_menciones
+        self.eliminar_numeros = remove_numbers if remove_numbers is not None else eliminar_numeros
 
     def fit(self, X, y=None):
         """Método fit compatible con Scikit-Learn (sin estado aprendido)."""
@@ -86,104 +93,116 @@ class TextNormalizer(BaseEstimator, TransformerMixin):
 
     def transform(self, X, y=None) -> List[str]:
         """Aplica la normalización a una lista o Serie de textos."""
-        return [self.normalize(text) for text in X]
+        return [self.normalizar(texto) for texto in X]
 
-    def normalize(self, text: str) -> str:
+    def normalizar(self, texto: str) -> str:
         """
         Normaliza una única cadena de texto aplicando la secuencia ordenada de reglas.
         """
-        if not isinstance(text, str) or not text.strip():
+        if not isinstance(texto, str) or not texto.strip():
             return ""
 
         # 1. Tratamiento o traducción de emojis antes de que sean destruidos por filtros de caracteres
-        if self.handle_emojis:
-            for emoji_char, token in EMOJI_SENTIMENT_MAP.items():
-                text = text.replace(emoji_char, token)
+        if self.manejar_emojis:
+            for emoji_char, token in MAPA_SENTIMIENTO_EMOJIS.items():
+                texto = texto.replace(emoji_char, token)
 
         # 2. Eliminación de URLs y menciones (@usuario)
-        if self.remove_urls_mentions:
-            text = re.sub(r"https?://\S+|www\.\S+", " ", text)
-            text = re.sub(r"@\w+", " ", text)
-            text = re.sub(r"\S+@\S+", " ", text)  # correos
+        if self.eliminar_urls_menciones:
+            texto = re.sub(r"https?://\S+|www\.\S+", " ", texto)
+            texto = re.sub(r"@\w+", " ", texto)
+            texto = re.sub(r"\S+@\S+", " ", texto)
 
         # 3. Conversión a minúsculas
-        if self.to_lower:
-            text = text.lower()
+        if self.a_minusculas:
+            texto = texto.lower()
 
-        # 4. Normalización de puntuación repetida (conserva hasta dos repeticiones para capturar énfasis)
-        if self.normalize_punctuation:
-            text = re.sub(r"!{2,}", " !! ", text)
-            text = re.sub(r"\?{2,}", " ?? ", text)
+        # 4. Normalización de puntuación repetida
+        if self.normalizar_puntuacion:
+            texto = re.sub(r"!{2,}", " !! ", texto)
+            texto = re.sub(r"\?{2,}", " ?? ", texto)
 
         # 5. Tratamiento de tildes / diacríticos
-        if self.remove_accents:
-            text = unicodedata.normalize("NFKD", text)
-            text = "".join(c for c in text if not unicodedata.combining(c))
+        if self.eliminar_tildes:
+            texto = unicodedata.normalize("NFKD", texto)
+            texto = "".join(c for c in texto if not unicodedata.combining(c))
 
         # 6. Eliminación de números
-        if self.remove_numbers:
-            text = re.sub(r"\d+", " ", text)
+        if self.eliminar_numeros:
+            texto = re.sub(r"\d+", " ", texto)
 
-        # 7. Limpieza de caracteres no alfanuméricos restantes (permitiendo letras y signos de énfasis)
-        text = re.sub(r"[^\w\s!?]", " ", text)
+        # 7. Limpieza de caracteres no alfanuméricos restantes
+        texto = re.sub(r"[^\w\s!?]", " ", texto)
 
         # 8. Reducción de espacios en blanco múltiples
-        text = re.sub(r"\s+", " ", text).strip()
+        texto = re.sub(r"\s+", " ", texto).strip()
 
-        return text
+        return texto
 
-    def explain(self, text: str) -> Dict[str, str]:
+    # Alias en inglés para normalizar()
+    normalize = normalizar
+
+    def explicar_pasos(self, texto: str) -> Dict[str, str]:
         """
         Devuelve el paso a paso de la normalización con fines didácticos,
         defensa ante el docente o consumo desde el frontend.
         """
-        steps = {"original": text}
+        pasos = {"original": texto}
 
         # Paso 1: Emojis
-        curr = text
-        if self.handle_emojis:
-            for emoji_char, token in EMOJI_SENTIMENT_MAP.items():
+        curr = texto
+        if self.manejar_emojis:
+            for emoji_char, token in MAPA_SENTIMIENTO_EMOJIS.items():
                 curr = curr.replace(emoji_char, token)
-        steps["emojis_mapeados"] = curr
+        pasos["emojis_mapeados"] = curr
 
         # Paso 2: Sin URLs / Menciones
-        if self.remove_urls_mentions:
+        if self.eliminar_urls_menciones:
             curr = re.sub(r"https?://\S+|www\.\S+", " ", curr)
             curr = re.sub(r"@\w+", " ", curr)
             curr = re.sub(r"\S+@\S+", " ", curr)
-        steps["sin_urls_menciones"] = curr
+        pasos["sin_urls_menciones"] = curr
 
         # Paso 3: Minúsculas
-        if self.to_lower:
+        if self.a_minusculas:
             curr = curr.lower()
-        steps["minusculas"] = curr
+        pasos["minusculas"] = curr
 
         # Paso 4: Puntuación de énfasis
-        if self.normalize_punctuation:
+        if self.normalizar_puntuacion:
             curr = re.sub(r"!{2,}", " !! ", curr)
             curr = re.sub(r"\?{2,}", " ?? ", curr)
-        steps["puntuacion_reducida"] = curr
+        pasos["puntuacion_reducida"] = curr
 
         # Paso 5: Sin tildes
-        if self.remove_accents:
+        if self.eliminar_tildes:
             curr = unicodedata.normalize("NFKD", curr)
             curr = "".join(c for c in curr if not unicodedata.combining(c))
-        steps["sin_tildes"] = curr
+        pasos["sin_tildes"] = curr
 
         # Paso 6: Sin números
-        if self.remove_numbers:
+        if self.eliminar_numeros:
             curr = re.sub(r"\d+", " ", curr)
-        steps["sin_numeros"] = curr
+        pasos["sin_numeros"] = curr
 
         # Paso 7: Caracteres especiales y espacios
         curr = re.sub(r"[^\w\s!?]", " ", curr)
         curr = re.sub(r"\s+", " ", curr).strip()
-        steps["resultado_final"] = curr
+        pasos["resultado_final"] = curr
 
-        return steps
+        return pasos
+
+    # Alias en inglés para explicar_pasos()
+    explain = explicar_pasos
 
 
-def normalize_review(text: str, **kwargs) -> str:
+def normalizar_resena(texto: str, **kwargs) -> str:
     """Función de utilidad directa para normalizar una reseña."""
-    normalizer = TextNormalizer(**kwargs)
-    return normalizer.normalize(text)
+    normalizador = NormalizadorTexto(**kwargs)
+    return normalizador.normalizar(texto)
+
+
+# Alias para retrocompatibilidad
+TextNormalizer = NormalizadorTexto
+normalize_review = normalizar_resena
+EMOJI_SENTIMENT_MAP = MAPA_SENTIMIENTO_EMOJIS

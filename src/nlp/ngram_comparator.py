@@ -5,16 +5,16 @@ evaluando tamaño del vocabulario, esparcimiento y captura de modificadores de s
 """
 from typing import Dict, List, Optional, Tuple
 import numpy as np
-from .vectorizer import ReviewVectorizer
+from .vectorizer import VectorizadorResenas
 
 
-class NgramComparator:
+class ComparadorNgramas:
     """
     Compara experimentalmente el efecto de usar unigramas vs. unigramas + bigramas en reseñas.
     """
 
-    def __init__(self, sample_corpus: Optional[List[str]] = None):
-        self.corpus = sample_corpus or [
+    def __init__(self, corpus_muestra: Optional[List[str]] = None, sample_corpus: Optional[List[str]] = None):
+        self.corpus = corpus_muestra or sample_corpus or [
             "La comida estuvo muy buena y el personal fue sumamente amable 😋",
             "No recomiendo este lugar, la atención fue pésima y la comida fría 🤮",
             "Excelente relación calidad precio, volvería sin dudarlo.",
@@ -25,21 +25,21 @@ class NgramComparator:
             "Una decepción total, no volveremos jamás.",
         ]
 
-    def compare(self) -> Dict[str, object]:
+    def comparar(self) -> Dict[str, object]:
         """
         Ejecuta la comparación estadística entre:
         - Configuración A: Solo unigramas (1, 1)
         - Configuración B: Unigramas + Bigramas (1, 2)
         """
         # Vectorizador A: Unigramas
-        vec_unigram = ReviewVectorizer(ngram_range=(1, 1), min_df=1, max_features=None)
+        vec_unigram = VectorizadorResenas(rango_ngramas=(1, 1), frecuencia_minima_doc=1, max_caracteristicas=None)
         matrix_unigram = vec_unigram.fit_transform(self.corpus)
-        vocab_unigram = vec_unigram.get_feature_names()
+        vocab_unigram = vec_unigram.obtener_nombres_caracteristicas()
 
         # Vectorizador B: Unigramas + Bigramas
-        vec_bigram = ReviewVectorizer(ngram_range=(1, 2), min_df=1, max_features=None)
+        vec_bigram = VectorizadorResenas(rango_ngramas=(1, 2), frecuencia_minima_doc=1, max_caracteristicas=None)
         matrix_bigram = vec_bigram.fit_transform(self.corpus)
-        vocab_bigram = vec_bigram.get_feature_names()
+        vocab_bigram = vec_bigram.obtener_nombres_caracteristicas()
 
         # Extraer solo los bigramas generados (aquellos términos con espacio)
         extracted_bigrams = [term for term in vocab_bigram if " " in term]
@@ -75,3 +75,10 @@ class NgramComparator:
                 "para clasificar sentimientos con alta precisión."
             ),
         }
+
+    # Alias en inglés
+    compare = comparar
+
+
+# Alias para retrocompatibilidad
+NgramComparator = ComparadorNgramas

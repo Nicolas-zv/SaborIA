@@ -11,59 +11,64 @@ from typing import Dict, List, Optional
 from sklearn.base import BaseEstimator, TransformerMixin
 
 # Términos compuestos del dominio gastronómico que no deben fragmentarse
-GASTRONOMIC_COMPOUNDS = {
+COMPUESTOS_GASTRONOMICOS = {
     "tex-mex", "fast-food", "all-you-can-eat", "t-bone", "fondue",
     "take-away", "drive-thru", "fine-dining", "coca-cola", "gluten-free",
     "buffet-libre", "a-la-carta", "post-cena"
 }
 
 # Expansión de contracciones gramaticales frecuentes en español
-CONTRACTIONS_MAP: Dict[str, List[str]] = {
+MAPA_CONTRACCIONES: Dict[str, List[str]] = {
     "al": ["a", "el"],
     "del": ["de", "el"],
 }
 
 
-class ReviewTokenizer(BaseEstimator, TransformerMixin):
+class TokenizadorResenas(BaseEstimator, TransformerMixin):
     """
     Tokenizador especializado para reseñas de restaurantes.
     Compatible con Scikit-Learn y como callable para TfidfVectorizer.
 
     Parámetros:
     -----------
-    expand_contractions : bool, default=True
+    expandir_contracciones : bool, default=True
         Expande contracciones como 'al' -> ['a', 'el'] y 'del' -> ['de', 'el'].
-    preserve_compounds : bool, default=True
+    preservar_compuestos : bool, default=True
         Preserva términos compuestos como 'tex-mex' o 'gluten-free' como un solo token.
-    preserve_emphasis : bool, default=True
+    preservar_enfasis : bool, default=True
         Separa signos de énfasis ('!!', '??') como tokens independientes de polaridad.
-    min_token_length : int, default=1
+    longitud_minima_token : int, default=1
         Longitud mínima permitida para tokens alfabéticos (evita caracteres vacíos).
     """
 
     def __init__(
         self,
-        expand_contractions: bool = True,
-        preserve_compounds: bool = True,
-        preserve_emphasis: bool = True,
-        min_token_length: int = 1,
+        expandir_contracciones: bool = True,
+        preservar_compuestos: bool = True,
+        preservar_enfasis: bool = True,
+        longitud_minima_token: int = 1,
+        # Parámetros retrocompatibles en inglés
+        expand_contractions: Optional[bool] = None,
+        preserve_compounds: Optional[bool] = None,
+        preserve_emphasis: Optional[bool] = None,
+        min_token_length: Optional[int] = None,
     ):
-        self.expand_contractions = expand_contractions
-        self.preserve_compounds = preserve_compounds
-        self.preserve_emphasis = preserve_emphasis
-        self.min_token_length = min_token_length
+        self.expandir_contracciones = expand_contractions if expand_contractions is not None else expandir_contracciones
+        self.preservar_compuestos = preserve_compounds if preserve_compounds is not None else preservar_compuestos
+        self.preservar_enfasis = preserve_emphasis if preserve_emphasis is not None else preservar_enfasis
+        self.longitud_minima_token = min_token_length if min_token_length is not None else longitud_minima_token
 
     def fit(self, X, y=None):
         return self
 
     def transform(self, X, y=None) -> List[List[str]]:
-        return [self.tokenize(text) for text in X]
+        return [self.tokenizar(texto) for texto in X]
 
-    def tokenize(self, text: str) -> List[str]:
+    def tokenizar(self, texto: str) -> List[str]:
         """
         Tokeniza un texto normalizado preservando la semántica gastronómica y de polaridad.
         """
-        if not isinstance(text, str) or not text.strip():
+        if not isinstance(texto, str) or not texto.strip():
             return []
 
         tokens: List[str] = []
@@ -73,41 +78,44 @@ class ReviewTokenizer(BaseEstimator, TransformerMixin):
         # 2. Términos con guión (ej. tex-mex, gluten-free)
         # 3. Signos de énfasis dobles (!! o ??)
         # 4. Palabras alfanuméricas estándar
-        pattern = r"(emoji_\w+|[a-zA-ZáéíóúñÁÉÍÓÚÑ]+-[a-zA-ZáéíóúñÁÉÍÓÚÑ]+|!!|\?\?|[a-zA-ZáéíóúñÁÉÍÓÚÑ\d]+)"
+        patron = r"(emoji_\w+|[a-zA-ZáéíóúñÁÉÍÓÚÑ]+-[a-zA-ZáéíóúñÁÉÍÓÚÑ]+|!!|\?\?|[a-zA-ZáéíóúñÁÉÍÓÚÑ\d]+)"
 
-        raw_tokens = re.findall(pattern, text)
+        tokens_brutos = re.findall(patron, texto)
 
-        for tok in raw_tokens:
-            tok_lower = tok.lower()
+        for tok in tokens_brutos:
+            tok_min = tok.lower()
 
             # Caso 1: Signos de énfasis
             if tok in {"!!", "??"}:
-                if self.preserve_emphasis:
+                if self.preservar_enfasis:
                     tokens.append(tok)
                 continue
 
             # Caso 2: Tokens de emoji
-            if tok_lower.startswith("emoji_"):
-                tokens.append(tok_lower)
+            if tok_min.startswith("emoji_"):
+                tokens.append(tok_min)
                 continue
 
             # Caso 3: Términos compuestos gastronómicos
-            if "-" in tok_lower and self.preserve_compounds:
-                tokens.append(tok_lower)
+            if "-" in tok_min and self.preservar_compuestos:
+                tokens.append(tok_min)
                 continue
 
             # Caso 4: Expansión de contracciones
-            if self.expand_contractions and tok_lower in CONTRACTIONS_MAP:
-                tokens.extend(CONTRACTIONS_MAP[tok_lower])
+            if self.expandir_contracciones and tok_min in MAPA_CONTRACCIONES:
+                tokens.extend(MAPA_CONTRACCIONES[tok_min])
                 continue
 
             # Caso estándar
-            if len(tok_lower) >= self.min_token_length:
-                tokens.append(tok_lower)
+            if len(tok_min) >= self.longitud_minima_token:
+                tokens.append(tok_min)
 
         return tokens
 
-    def explain_difficult_cases(self, text: str) -> Dict[str, object]:
+    # Alias en inglés para tokenizar()
+    tokenize = tokenizar
+
+    def explicar_casos_dificiles(self, texto: str) -> Dict[str, object]:
         """
         Analiza e identifica casos difíciles encontrados en el texto:
         - Contracciones
@@ -115,8 +123,8 @@ class ReviewTokenizer(BaseEstimator, TransformerMixin):
         - Énfasis y emojis
         Útil para la justificación de NLP ante el docente y la vista de frontend.
         """
-        tokens = self.tokenize(text)
-        detected_cases = {
+        tokens = self.tokenizar(texto)
+        casos_detectados = {
             "tokens_totales": len(tokens),
             "tokens": tokens,
             "contracciones_detectadas": [],
@@ -124,22 +132,32 @@ class ReviewTokenizer(BaseEstimator, TransformerMixin):
             "emojis_o_enfasis": [],
         }
 
-        words = text.lower().split()
-        for w in words:
-            clean_w = re.sub(r"[^\w-]", "", w)
-            if clean_w in CONTRACTIONS_MAP:
-                detected_cases["contracciones_detectadas"].append(
-                    f"'{clean_w}' -> {CONTRACTIONS_MAP[clean_w]}"
+        palabras = texto.lower().split()
+        for p in palabras:
+            p_limpia = re.sub(r"[^\w-]", "", p)
+            if p_limpia in MAPA_CONTRACCIONES:
+                casos_detectados["contracciones_detectadas"].append(
+                    f"'{p_limpia}' -> {MAPA_CONTRACCIONES[p_limpia]}"
                 )
-            if "-" in clean_w:
-                detected_cases["terminos_compuestos"].append(clean_w)
-            if "emoji_" in w or "!!" in w or "??" in w:
-                detected_cases["emojis_o_enfasis"].append(w)
+            if "-" in p_limpia:
+                casos_detectados["terminos_compuestos"].append(p_limpia)
+            if "emoji_" in p or "!!" in p or "??" in p:
+                casos_detectados["emojis_o_enfasis"].append(p)
 
-        return detected_cases
+        return casos_detectados
+
+    # Alias en inglés para explicar_casos_dificiles()
+    explain_difficult_cases = explicar_casos_dificiles
 
 
-def tokenize_review(text: str, **kwargs) -> List[str]:
+def tokenizar_resena(texto: str, **kwargs) -> List[str]:
     """Función de utilidad directa para tokenizar una reseña."""
-    tokenizer = ReviewTokenizer(**kwargs)
-    return tokenizer.tokenize(text)
+    tokenizador = TokenizadorResenas(**kwargs)
+    return tokenizador.tokenizar(texto)
+
+
+# Alias para retrocompatibilidad
+ReviewTokenizer = TokenizadorResenas
+tokenize_review = tokenizar_resena
+GASTRONOMIC_COMPOUNDS = COMPUESTOS_GASTRONOMICOS
+CONTRACTIONS_MAP = MAPA_CONTRACCIONES
