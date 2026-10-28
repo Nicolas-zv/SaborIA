@@ -54,4 +54,5 @@ Para garantizar la trazabilidad exigida en la rúbrica de evaluación (20 puntos
 
 ### Contribuciones de Roberto (`@Roberto`)
 - `chore: agregar enunciado de proyecto al .gitignore` (`867422c`)
-- `docs: documentar flujo de colaboracion y contribuciones` *(Etapa 1)*
+- `docs: documentar flujo de colaboracion y contribuciones` (`2ffff52` - *Etapa 1*)
+- `feat: implementar normalizacion de reseñas` (*Etapa 2*)
