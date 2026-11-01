@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from src.models.logistic_regression import ClasificadorRegresionLogistica
@@ -38,6 +39,7 @@ RUTA_RAIZ = Path(__file__).resolve().parent.parent
 RUTA_MODELO = RUTA_RAIZ / "models" / "regresion_logistica.joblib"
 RUTA_METRICAS = RUTA_RAIZ / "models" / "metricas_regresion_logistica.json"
 RUTA_ERRORES = RUTA_RAIZ / "models" / "analisis_errores.json"
+RUTA_FRONTEND = RUTA_RAIZ / "frontend"
 
 # Cargar modelo en memoria al iniciar (evitando reentrenar o reimplementar preprocesamiento)
 clasificador_activo: Optional[ClasificadorRegresionLogistica] = None
@@ -165,3 +167,9 @@ def obtener_analisis_errores():
         return []
     with open(RUTA_ERRORES, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+# Montar Frontend estático para servir la interfaz web directamente
+if RUTA_FRONTEND.exists():
+    app.mount("/", StaticFiles(directory=str(RUTA_FRONTEND), html=True), name="frontend")
+

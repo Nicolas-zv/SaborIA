@@ -3,7 +3,9 @@
  * Desarrollado por Roberto (@Roberto) para SaborIA
  */
 
-const API_BASE = "http://localhost:8000";
+let API_BASE = window.location.protocol.startsWith("http")
+  ? window.location.origin
+  : "http://localhost:8001";
 
 // Datos por defecto (fallback precargado de models/metricas_regresion_logistica.json)
 const METRICAS_FALLBACK = {
