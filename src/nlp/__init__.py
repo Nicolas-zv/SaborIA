@@ -33,6 +33,11 @@ from .ngram_comparator import (
     ComparadorNgramas,
     NgramComparator,
 )
+from .pipeline import (
+    PipelineNLP,
+    pipeline_nlp_default,
+    preprocesar_resena_completa,
+)
 
 __all__ = [
     # Nombres principales en español
@@ -47,6 +52,9 @@ __all__ = [
     "preprocesador_personalizado",
     "tokenizador_personalizado",
     "ComparadorNgramas",
+    "PipelineNLP",
+    "pipeline_nlp_default",
+    "preprocesar_resena_completa",
     # Alias retrocompatibles en inglés
     "TextNormalizer",
     "normalize_review",
