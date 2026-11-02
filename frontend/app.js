@@ -3,9 +3,8 @@
  * Desarrollado por Roberto (@Roberto) para SaborIA
  */
 
-let API_BASE = window.location.protocol.startsWith("http")
-  ? window.location.origin
-  : "http://localhost:8001";
+// URL base del backend API REST (a desarrollar por Nicolás en el puerto 8000)
+const API_BASE = "http://localhost:8000";
 
 // Datos por defecto (fallback precargado de models/metricas_regresion_logistica.json)
 const METRICAS_FALLBACK = {

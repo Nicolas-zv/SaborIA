@@ -62,5 +62,4 @@ Para garantizar la trazabilidad exigida en la rúbrica de evaluación (20 puntos
 - `refactor(nlp): estandarizar clases y funciones al espanol`
 - `feat(nlp): integrar pipeline nlp unificado y desglose paso a paso` (*Etapa 3*)
 - `feat(ml): implementar regresion logistica con gridsearchcv, metricas y serializacion` (*Etapa 4*)
-- `feat(frontend): disenar interfaz web interactiva, visualizador de nlp y dashboard de metricas` (*Etapa 5*)
-- `feat(backend): implementar api rest con fastapi, endpoints /predict, /preprocess y tests` (*Etapa 5 y 6*)
+- `feat(frontend): disenar interfaz web interactiva, visualizador de nlp y dashboard de metricas` (*Etapa 5 y 6*)
