@@ -5,3 +5,4 @@ __pycache__/
 .pytest_cache/
 .env
 .vscode/
+docs/enunciado_proyecto.md

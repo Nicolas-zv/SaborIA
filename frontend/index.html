@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SaborIA – Sistema Inteligente de Análisis de Sentimientos</title>
+  <meta name="description" content="Plataforma de clasificación de sentimientos en reseñas gastronómicas con pipeline interactivo de NLP y Machine Learning.">
+  <!-- Fuentes modernas de Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Fondo con efecto Glow Dinámico -->
+  <div class="background-glow top-left"></div>
+  <div class="background-glow bottom-right"></div>
+
+  <!-- Navegación Principal -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">🍽️</div>
+        <div>
+          <h1 class="brand-title">Sabor<span>IA</span></h1>
+          <p class="brand-subtitle">Análisis Inteligente de Reseñas Gastronómicas</p>
+        </div>
+      </div>
+
+      <nav class="nav-tabs" role="tablist">
+        <button class="nav-tab active" data-tab="tab-analizador" id="tab-btn-analizador" role="tab">
+          <span class="tab-icon">🎯</span> Analizador en Vivo
+        </button>
+        <button class="nav-tab" data-tab="tab-pipeline" id="tab-btn-pipeline" role="tab">
+          <span class="tab-icon">🔬</span> Pipeline NLP Paso a Paso
+        </button>
+        <button class="nav-tab" data-tab="tab-metricas" id="tab-btn-metricas" role="tab">
+          <span class="tab-icon">📊</span> Métricas & Comparativa
+        </button>
+        <button class="nav-tab" data-tab="tab-errores" id="tab-btn-errores" role="tab">
+          <span class="tab-icon">🔍</span> Casos de Estudio & Errores
+        </button>
+      </nav>
+
+      <div class="api-status-badge" id="api-status-badge">
+        <span class="status-dot pulsing"></span>
+        <span id="api-status-text">Conectando API...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal -->
+  <main class="main-content">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: ANALIZADOR EN VIVO (INDIVIDUAL Y MASIVO) -->
+    <!-- ========================================== -->
+    <section id="tab-analizador" class="tab-pane active" role="tabpanel">
+      <div class="section-hero">
+        <span class="hero-chip">Capa 3 & 5 • Inferencia de Machine Learning</span>
+        <h2>Clasificador de Sentimiento en Tiempo Real</h2>
+        <p>Introduce cualquier reseña de restaurante en español o selecciona un ejemplo para evaluar cómo el modelo predice la polaridad y confianza.</p>
+      </div>
+
+      <div class="analizador-grid">
+        <!-- Panel Izquierdo: Entrada de Reseña -->
+        <div class="card glass-card">
+          <div class="card-header">
+            <h3>📝 Reseña a Evaluar</h3>
+            <span class="char-counter" id="char-counter">0 caracteres</span>
+          </div>
+
+          <div class="preset-buttons-container">
+            <span class="preset-label">Probar ejemplo rápido:</span>
+            <div class="preset-buttons">
+              <button type="button" class="btn-preset" data-text="¡La cena estuvo exquisita, los vinos insuperables y el servicio de diez! 😋🍷">⭐ Positiva</button>
+              <button type="button" class="btn-preset" data-text="El lugar es bonito y tranquilo, pero la comida no destacó en nada, precios regulares.">⚖️ Neutral</button>
+              <button type="button" class="btn-preset" data-text="Pésimo servicio, esperamos hora y media por los platos y llegaron totalmente fríos. 😡">❌ Negativa</button>
+              <button type="button" class="btn-preset" data-text="La comida no estuvo mala, pero tampoco es una experiencia que volvería a repetir.">🧠 Negación Compleja</button>
+            </div>
+          </div>
+
+          <textarea id="input-review" class="custom-textarea" placeholder="Escribe aquí la reseña del restaurante (ej. 'La pasta estaba exquisita pero el servicio fue muy lento...')" rows="5"></textarea>
+
+          <div class="card-actions">
+            <button id="btn-predecir" class="btn-primary">
+              <span class="btn-icon">⚡</span> Analizar Sentimiento
+            </button>
+            <button id="btn-limpiar" class="btn-secondary">
+              <span>🧹</span> Limpiar
+            </button>
+          </div>
+
+          <!-- Inferencia Masiva (Lotes) -->
+          <div class="batch-section">
+            <div class="batch-header" id="batch-toggle">
+              <span>📁 Carga y Análisis Masivo (Lotes CSV o Múltiples Reseñas)</span>
+              <span class="toggle-icon">▼</span>
+            </div>
+            <div id="batch-content" class="batch-content collapsed">
+              <p class="batch-desc">Ingresa una reseña por línea o carga un archivo <code>.txt</code> / <code>.csv</code>:</p>
+              <textarea id="batch-input" class="custom-textarea batch-textarea" placeholder="Reseña 1&#10;Reseña 2&#10;Reseña 3..." rows="4"></textarea>
+              <div class="batch-actions">
+                <input type="file" id="batch-file-input" accept=".txt,.csv" style="display:none;">
+                <button type="button" id="btn-upload-file" class="btn-secondary">
+                  <span>📂</span> Cargar Archivo
+                </button>
+                <button type="button" id="btn-batch-predict" class="btn-primary">
+                  <span>🚀</span> Analizar Lote
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel Derecho: Resultado de Inferencia -->
+        <div class="card glass-card result-card">
+          <div class="card-header">
+            <h3>🎯 Diagnóstico del Modelo</h3>
+            <span class="model-badge">Regresión Logística + TF-IDF</span>
+          </div>
+
+          <div id="result-placeholder" class="result-placeholder">
+            <div class="placeholder-icon">🔮</div>
+            <p>Escribe una reseña y presiona <strong>"Analizar Sentimiento"</strong> para observar el veredicto probabilístico del modelo.</p>
+          </div>
+
+          <div id="result-display" class="result-display hidden">
+            <div class="sentiment-badge-container">
+              <div id="sentiment-badge" class="sentiment-badge">
+                <span id="sentiment-icon" class="sentiment-icon">😊</span>
+                <span id="sentiment-name" class="sentiment-name">POSITIVO</span>
+              </div>
+              <div class="confidence-container">
+                <span class="confidence-label">Nivel de Confianza:</span>
+                <span id="confidence-value" class="confidence-value">87.5%</span>
+              </div>
+            </div>
+
+            <!-- Desglose de Probabilidades -->
+            <div class="prob-section">
+              <h4>Distribución de Probabilidades por Clase</h4>
+              
+              <div class="prob-bar-group">
+                <div class="prob-info">
+                  <span class="prob-name">Positivo</span>
+                  <span id="prob-val-positivo" class="prob-val">0%</span>
+                </div>
+                <div class="prob-track">
+                  <div id="prob-fill-positivo" class="prob-fill fill-pos" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <div class="prob-bar-group">
+                <div class="prob-info">
+                  <span class="prob-name">Neutral</span>
+                  <span id="prob-val-neutral" class="prob-val">0%</span>
+                </div>
+                <div class="prob-track">
+                  <div id="prob-fill-neutral" class="prob-fill fill-neu" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <div class="prob-bar-group">
+                <div class="prob-info">
+                  <span class="prob-name">Negativo</span>
+                  <span id="prob-val-negativo" class="prob-val">0%</span>
+                </div>
+                <div class="prob-track">
+                  <div id="prob-fill-negativo" class="prob-fill fill-neg" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="quick-step-preview">
+              <p>¿Quieres ver cómo el texto fue limpiado y transformado?</p>
+              <button id="btn-ver-en-pipeline" class="btn-text">
+                Ver transformación en el Visualizador NLP ➔
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de Resultados Masivos (si se ejecuta lote) -->
+      <div id="batch-results-container" class="card glass-card batch-results-container hidden">
+        <div class="card-header">
+          <h3>📊 Resultados del Análisis por Lote</h3>
+          <span id="batch-count-badge" class="badge">0 reseñas</span>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table" id="batch-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Reseña Original</th>
+                <th>Sentimiento</th>
+                <th>Confianza</th>
+                <th>Probabilidad</th>
+              </tr>
+            </thead>
+            <tbody id="batch-table-body">
+              <!-- Dinámico -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: VISUALIZADOR DEL PIPELINE NLP PASO A PASO -->
+    <!-- ========================================== -->
+    <section id="tab-pipeline" class="tab-pane" role="tabpanel">
+      <div class="section-hero">
+        <span class="hero-chip">Capa 2 • Procesamiento de Lenguaje Natural</span>
+        <h2>Visualizador del Pipeline Paso a Paso</h2>
+        <p>Observa cada una de las 5 transformaciones lingüísticas que sufre el texto antes de entrar a la matriz numérica TF-IDF.</p>
+      </div>
+
+      <div class="pipeline-runner-box card glass-card">
+        <div class="pipeline-input-row">
+          <input type="text" id="pipeline-text-input" class="custom-input" placeholder="Ingresa una oración o reseña (ej: '¡¡¡No nos gustó nada la comida, pésima atención!!! 😡')">
+          <button id="btn-ejecutar-pipeline" class="btn-primary">
+            <span>🔬</span> Inspeccionar NLP
+          </button>
+        </div>
+      </div>
+
+      <!-- Fases del Pipeline Conectadas -->
+      <div class="pipeline-flow-container">
+        <!-- Paso 1 -->
+        <div class="pipeline-step-card glass-card">
+          <div class="step-badge">Fase 1</div>
+          <div class="step-header">
+            <div class="step-title-icon">🔤</div>
+            <div>
+              <h3>Normalización Textual</h3>
+              <p class="step-subtitle">Minúsculas, sustitución semántica de emojis, normalización de signos</p>
+            </div>
+          </div>
+          <div class="step-content">
+            <label>Texto Normalizado:</label>
+            <div id="step-1-output" class="step-output-box mono">Esperando texto...</div>
+          </div>
+        </div>
+
+        <div class="pipeline-arrow">▼</div>
+
+        <!-- Paso 2 -->
+        <div class="pipeline-step-card glass-card">
+          <div class="step-badge">Fase 2</div>
+          <div class="step-header">
+            <div class="step-title-icon">✂️</div>
+            <div>
+              <h3>Tokenización Lingüística</h3>
+              <p class="step-subtitle">Segmentación de palabras, contracciones y modismos gastronómicos</p>
+            </div>
+          </div>
+          <div class="step-content">
+            <label>Tokens Extraídos:</label>
+            <div id="step-2-output" class="step-token-cloud">Esperando tokens...</div>
+          </div>
+        </div>
+
+        <div class="pipeline-arrow">▼</div>
+
+        <!-- Paso 3 -->
+        <div class="pipeline-step-card glass-card">
+          <div class="step-badge">Fase 3</div>
+          <div class="step-header">
+            <div class="step-title-icon">🛡️</div>
+            <div>
+              <h3>Filtrado de Stop Words (Conservando Negaciones)</h3>
+              <p class="step-subtitle">Eliminación de conectores vacíos sin perder <em>no, ni, nunca, sin, tampoco</em></p>
+            </div>
+          </div>
+          <div class="step-content">
+            <label>Tokens Filtrados:</label>
+            <div id="step-3-output" class="step-token-cloud">Esperando filtrado...</div>
+          </div>
+        </div>
+
+        <div class="pipeline-arrow">▼</div>
+
+        <!-- Paso 4 -->
+        <div class="pipeline-step-card glass-card">
+          <div class="step-badge">Fase 4</div>
+          <div class="step-header">
+            <div class="step-title-icon">🌱</div>
+            <div>
+              <h3>Lematización con spaCy</h3>
+              <p class="step-subtitle">Reducción a la forma canónica o lema en español</p>
+            </div>
+          </div>
+          <div class="step-content">
+            <label>Lemas Resultantes:</label>
+            <div id="step-4-output" class="step-token-cloud">Esperando lemas...</div>
+          </div>
+        </div>
+
+        <div class="pipeline-arrow">▼</div>
+
+        <!-- Paso 5 -->
+        <div class="pipeline-step-card glass-card highlight-step">
+          <div class="step-badge highlight-badge">Fase 5</div>
+          <div class="step-header">
+            <div class="step-title-icon">📐</div>
+            <div>
+              <h3>Representación Vectorial TF-IDF</h3>
+              <p class="step-subtitle">Vector numérico de salida listo para el modelo predictivo</p>
+            </div>
+          </div>
+          <div class="step-content">
+            <label>Texto Final Consolidado:</label>
+            <div id="step-5-output" class="step-output-box mono">Esperando consolidación...</div>
+            <div id="step-stats" class="step-stats-bar">
+              <!-- Estadísticas de compresión -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: DASHBOARD DE MÉTRICAS Y COMPARATIVA -->
+    <!-- ========================================== -->
+    <section id="tab-metricas" class="tab-pane" role="tabpanel">
+      <div class="section-hero">
+        <span class="hero-chip">Capa 3 & 4 • Rendimiento y Validación</span>
+        <h2>Métricas de Evaluación del Modelo</h2>
+        <p>Resultados obtenidos en el conjunto de prueba aislado (146 reseñas) tras la optimización de hiperparámetros con <code>GridSearchCV</code>.</p>
+      </div>
+
+      <!-- Tarjetas KPI Principales -->
+      <div class="kpi-grid">
+        <div class="kpi-card glass-card">
+          <div class="kpi-icon">🎯</div>
+          <div class="kpi-body">
+            <span class="kpi-label">Exactitud (Accuracy)</span>
+            <span class="kpi-value" id="kpi-accuracy">69.86%</span>
+            <span class="kpi-subtext positive">+16.44% sobre Dummy Baseline</span>
+          </div>
+        </div>
+
+        <div class="kpi-card glass-card">
+          <div class="kpi-icon">⚖️</div>
+          <div class="kpi-body">
+            <span class="kpi-label">F1-Score Ponderado</span>
+            <span class="kpi-value" id="kpi-f1">69.80%</span>
+            <span class="kpi-subtext positive">+32.59% sobre Dummy Baseline</span>
+          </div>
+        </div>
+
+        <div class="kpi-card glass-card">
+          <div class="kpi-icon">🔍</div>
+          <div class="kpi-body">
+            <span class="kpi-label">Precisión Ponderada</span>
+            <span class="kpi-value" id="kpi-precision">69.89%</span>
+            <span class="kpi-subtext">Calidad de las etiquetas predichas</span>
+          </div>
+        </div>
+
+        <div class="kpi-card glass-card">
+          <div class="kpi-icon">📡</div>
+          <div class="kpi-body">
+            <span class="kpi-label">Recall Ponderado</span>
+            <span class="kpi-value" id="kpi-recall">69.86%</span>
+            <span class="kpi-subtext">Sensibilidad de detección</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grilla: Matriz de Confusión y Comparativa -->
+      <div class="dashboard-grid">
+        <!-- Matriz de Confusión -->
+        <div class="card glass-card">
+          <div class="card-header">
+            <h3>🔲 Matriz de Confusión (Test Set)</h3>
+            <span class="tag-info">146 muestras evaluadas</span>
+          </div>
+          <p class="section-desc">Eje vertical: Sentimiento Real | Eje horizontal: Sentimiento Predicho</p>
+
+          <div class="confusion-matrix-wrapper">
+            <table class="matrix-table" id="matrix-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Pred. Negativo</th>
+                  <th>Pred. Neutral</th>
+                  <th>Pred. Positivo</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th class="matrix-row-label">Real Negativo</th>
+                  <td class="cell-heat-high" id="cell-0-0">27</td>
+                  <td class="cell-heat-low" id="cell-0-1">6</td>
+                  <td class="cell-heat-med" id="cell-0-2">9</td>
+                </tr>
+                <tr>
+                  <th class="matrix-row-label">Real Neutral</th>
+                  <td class="cell-heat-med" id="cell-1-0">9</td>
+                  <td class="cell-heat-med" id="cell-1-1">12</td>
+                  <td class="cell-heat-low" id="cell-1-2">5</td>
+                </tr>
+                <tr>
+                  <th class="matrix-row-label">Real Positivo</th>
+                  <td class="cell-heat-med" id="cell-2-0">10</td>
+                  <td class="cell-heat-low" id="cell-2-1">5</td>
+                  <td class="cell-heat-highest" id="cell-2-2">63</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Comparativa con Línea Base (Baseline) -->
+        <div class="card glass-card">
+          <div class="card-header">
+            <h3>📈 Comparativa vs. Baseline Dummy</h3>
+            <span class="tag-info">Estrategia: Most Frequent</span>
+          </div>
+          <p class="section-desc">Demostración formal del valor aportado por el pipeline frente a una regla trivial.</p>
+
+          <div class="comparison-bars">
+            <div class="comp-item">
+              <div class="comp-label-row">
+                <span>Exactitud (Accuracy)</span>
+                <span><strong>Regresión Logística: 69.86%</strong> vs Dummy: 53.42%</span>
+              </div>
+              <div class="comp-dual-bar">
+                <div class="bar-dummy" style="width: 53.42%">53.4%</div>
+                <div class="bar-model" style="width: 69.86%">69.9% (+16.4%)</div>
+              </div>
+            </div>
+
+            <div class="comp-item">
+              <div class="comp-label-row">
+                <span>F1-Score Ponderado</span>
+                <span><strong>Regresión Logística: 69.80%</strong> vs Dummy: 37.21%</span>
+              </div>
+              <div class="comp-dual-bar">
+                <div class="bar-dummy" style="width: 37.21%">37.2%</div>
+                <div class="bar-model" style="width: 69.80%">69.8% (+32.6%)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hiperparámetros Óptimos -->
+          <div class="hyperparams-box">
+            <h4>⚙️ Hiperparámetros Seleccionados por GridSearchCV:</h4>
+            <ul class="params-list">
+              <li><strong>Regularización (C):</strong> <code>1.0</code></li>
+              <li><strong>Pesos de clase (class_weight):</strong> <code>balanced</code> (corrige el desbalance)</li>
+              <li><strong>Rango de N-gramas:</strong> <code>(1, 1)</code></li>
+              <li><strong>Máximo de características TF-IDF:</strong> <code>1500</code></li>
+              <li><strong>Validación Cruzada:</strong> <code>StratifiedKFold (5 Folds)</code></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: CASOS DE ESTUDIO Y ERRORES CUALITATIVOS -->
+    <!-- ========================================== -->
+    <section id="tab-errores" class="tab-pane" role="tabpanel">
+      <div class="section-hero">
+        <span class="hero-chip">Rúbrica • Defensa y Preguntas Conceptuales</span>
+        <h2>Análisis Cualitativo de Errores</h2>
+        <p>Explicación lingüística y estadística de por qué el modelo puede fallar (sarcasmo, ambigüedad y dobles negaciones) para la defensa individual.</p>
+      </div>
+
+      <div class="card glass-card">
+        <div class="card-header">
+          <h3>🧐 Casos Reales del Conjunto de Prueba donde el Modelo Falló</h3>
+          <span class="tag-warning">Material de Apoyo para Preguntas del Docente</span>
+        </div>
+
+        <div class="error-cases-grid" id="error-cases-container">
+          <!-- Cargado dinámicamente desde /errors o fallback precargado -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-content">
+      <p><strong>SaborIA</strong> • Proyecto Integrador de Tópicos y Programación Avanzada</p>
+      <p>Equipo de Desarrollo: <strong>Roberto (@Roberto)</strong> & <strong>Nicolás (@Nicolas-zv)</strong></p>
+      <p class="footer-meta">Pipeline reproducible serializado con Scikit-Learn y FastAPI • Noviembre 2026</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

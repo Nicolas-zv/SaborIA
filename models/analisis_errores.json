@@ -1,0 +1,80 @@
+[
+  {
+    "indice_test": 0,
+    "texto_resena": "La relación calidad-precio no es del todo competitiva comparada con locales similares.",
+    "etiqueta_real": "neutral",
+    "etiqueta_predicha": "negativo",
+    "confianza_predicha": 0.4509,
+    "confianza_real": 0.2654,
+    "distribucion_probabilidades": {
+      "negativo": 0.4509,
+      "neutral": 0.2654,
+      "positivo": 0.2837
+    }
+  },
+  {
+    "indice_test": 3,
+    "texto_resena": "La carne estaba tan tierna que sospecho que fue masajeada por ángeles antes de llegar a la mesa.",
+    "etiqueta_real": "positivo",
+    "etiqueta_predicha": "negativo",
+    "confianza_predicha": 0.5566,
+    "confianza_real": 0.2778,
+    "distribucion_probabilidades": {
+      "negativo": 0.5566,
+      "neutral": 0.1656,
+      "positivo": 0.2778
+    }
+  },
+  {
+    "indice_test": 5,
+    "texto_resena": "Nos ofrecieron una mesa junto a la puerta que resultaba muy incómoda por las corrientes.",
+    "etiqueta_real": "neutral",
+    "etiqueta_predicha": "negativo",
+    "confianza_predicha": 0.5501,
+    "confianza_real": 0.2215,
+    "distribucion_probabilidades": {
+      "negativo": 0.5501,
+      "neutral": 0.2215,
+      "positivo": 0.2284
+    }
+  },
+  {
+    "indice_test": 8,
+    "texto_resena": "Las copas para el maridaje eran mediocres. Para el precio que cobran, deberían usar cristalería de mayor calidad que potencie el vino.",
+    "etiqueta_real": "negativo",
+    "etiqueta_predicha": "neutral",
+    "confianza_predicha": 0.5385,
+    "confianza_real": 0.2827,
+    "distribucion_probabilidades": {
+      "negativo": 0.2827,
+      "neutral": 0.5385,
+      "positivo": 0.1789
+    }
+  },
+  {
+    "indice_test": 10,
+    "texto_resena": "Presentaciones increíbles. Algo ruidoso el comedor.",
+    "etiqueta_real": "positivo",
+    "etiqueta_predicha": "neutral",
+    "confianza_predicha": 0.4861,
+    "confianza_real": 0.3831,
+    "distribucion_probabilidades": {
+      "negativo": 0.1307,
+      "neutral": 0.4861,
+      "positivo": 0.3831
+    }
+  },
+  {
+    "indice_test": 11,
+    "texto_resena": "El menú degustación presenta un buen equilibrio de sabores. Algunos pases destacaron más que otros, pero el nivel general es notable.",
+    "etiqueta_real": "positivo",
+    "etiqueta_predicha": "neutral",
+    "confianza_predicha": 0.7245,
+    "confianza_real": 0.2299,
+    "distribucion_probabilidades": {
+      "negativo": 0.0456,
+      "neutral": 0.7245,
+      "positivo": 0.2299
+    }
+  }
+]
