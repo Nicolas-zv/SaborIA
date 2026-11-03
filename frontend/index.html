@@ -23,68 +23,33 @@
   <header class="app-header">
     <div class="header-laser-beam"></div>
     <div class="header-container">
-      
-      <!-- Fila Superior: Marca + Núcleo Holográfico Interactivo de Desintegración & Reconstrucción -->
-      <div class="header-top-row">
-        <div class="brand" id="brand-interactive" title="SaborIA – Sistema Inteligente de Análisis de Sentimientos">
-          <div class="brand-icon-wrapper">
-            <div class="brand-icon" id="brand-icon-base">🍽️</div>
-            <div class="quantum-ring"></div>
-          </div>
-          <div>
-            <h1 class="brand-title">Sabor<span>IA</span></h1>
-            <p class="brand-subtitle">Análisis Inteligente de Reseñas Gastronómicas</p>
-          </div>
-        </div>
-
-        <!-- Reactor Holográfico Cuántico de SaborIA (Animación en Barra) -->
-        <div class="quantum-reactor-bar" id="quantum-reactor-bar">
-          <div class="reactor-canvas-wrapper" id="reactor-canvas-wrapper" title="¡Haz clic para desintegrar y reconstruir el emblema de SaborIA!">
-            <canvas id="reactor-hologram-canvas" width="300" height="64"></canvas>
-            <div class="reactor-glow-ambient"></div>
-          </div>
-          <div class="reactor-controls">
-            <button class="btn-reactor-trigger" id="btn-trigger-disintegrate" type="button" title="Activar desintegración y reconstrucción de partículas cuánticas">
-              <span class="reactor-btn-icon">⚡</span>
-              <span class="reactor-btn-text" id="reactor-btn-text">Desintegrar</span>
-            </button>
-            <div class="reactor-telemetry">
-              <span class="reactor-status-dot pulsing"></span>
-              <span class="reactor-status-text" id="reactor-status-text">Núcleo NLP Activo</span>
-            </div>
-          </div>
+      <div class="brand">
+        <div class="brand-icon">🍽️</div>
+        <div>
+          <h1 class="brand-title">Sabor<span>IA</span></h1>
+          <p class="brand-subtitle">Análisis Inteligente de Reseñas Gastronómicas</p>
         </div>
       </div>
 
-      <!-- Fila Inferior: Pestañas de Navegación + Estado de API y Modelo -->
-      <div class="header-nav-row">
-        <nav class="nav-tabs" role="tablist">
-          <button class="nav-tab active" data-tab="tab-analizador" id="tab-btn-analizador" role="tab">
-            <span class="tab-icon">🎯</span> Analizador en Vivo
-          </button>
-          <button class="nav-tab" data-tab="tab-pipeline" id="tab-btn-pipeline" role="tab">
-            <span class="tab-icon">🔬</span> Pipeline NLP Paso a Paso
-          </button>
-          <button class="nav-tab" data-tab="tab-metricas" id="tab-btn-metricas" role="tab">
-            <span class="tab-icon">📊</span> Métricas & Comparativa
-          </button>
-          <button class="nav-tab" data-tab="tab-errores" id="tab-btn-errores" role="tab">
-            <span class="tab-icon">🔍</span> Casos de Estudio & Errores
-          </button>
-        </nav>
+      <nav class="nav-tabs" role="tablist">
+        <button class="nav-tab active" data-tab="tab-analizador" id="tab-btn-analizador" role="tab">
+          <span class="tab-icon">🎯</span> Analizador en Vivo
+        </button>
+        <button class="nav-tab" data-tab="tab-pipeline" id="tab-btn-pipeline" role="tab">
+          <span class="tab-icon">🔬</span> Pipeline NLP Paso a Paso
+        </button>
+        <button class="nav-tab" data-tab="tab-metricas" id="tab-btn-metricas" role="tab">
+          <span class="tab-icon">📊</span> Métricas & Comparativa
+        </button>
+        <button class="nav-tab" data-tab="tab-errores" id="tab-btn-errores" role="tab">
+          <span class="tab-icon">🔍</span> Casos de Estudio & Errores
+        </button>
+      </nav>
 
-        <div class="header-right-badges">
-          <div class="model-badge-pill" title="Modelo Productivo NLP de Roberto">
-            <span class="model-badge-dot"></span>
-            <span>Regresión Logística + TF-IDF</span>
-          </div>
-          <div class="api-status-badge" id="api-status-badge">
-            <span class="status-dot pulsing"></span>
-            <span id="api-status-text">Conectando API...</span>
-          </div>
-        </div>
+      <div class="api-status-badge" id="api-status-badge">
+        <span class="status-dot pulsing"></span>
+        <span id="api-status-text">Conectando API...</span>
       </div>
-
     </div>
   </header>
 
