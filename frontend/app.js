@@ -605,6 +605,7 @@ function initVisualEffects() {
   initCursorSpotlight();
   initCardSpotlight();
   initInteractiveCanvas();
+  initHeaderAnimationLoop();
 }
 
 // 1. Cursor Spotlight Follower
@@ -823,6 +824,428 @@ function resetAtmosphereTheme() {
   if (glowTop) glowTop.style.background = "radial-gradient(circle, #6366f1 0%, rgba(139, 92, 246, 0.6) 40%, transparent 70%)";
   if (glowBottom) glowBottom.style.background = "radial-gradient(circle, #ec4899 0%, rgba(244, 63, 94, 0.5) 40%, transparent 70%)";
   if (cursor) cursor.style.background = "radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.08) 35%, transparent 70%)";
+}
+
+/* ==========================================================================
+   Animación Pura en Loop Continuo: Emblema Gastronómico de SaborIA
+   (Desintegración en Partículas y Reconstrucción Automática sin Botones)
+   ========================================================================== */
+function initHeaderAnimationLoop() {
+  const canvas = document.getElementById("header-loop-canvas");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 2;
+  const logicalW = 260;
+  const logicalH = 56;
+
+  canvas.width = logicalW * dpr;
+  canvas.height = logicalH * dpr;
+  ctx.scale(dpr, dpr);
+
+  const cx = 46;  // Centro del emblema gastronómico
+  const cy = 28;
+
+  const colors = ["#f59e0b", "#fbbf24", "#38bdf8", "#818cf8", "#ec4899", "#10b981", "#ffffff"];
+  const particles = [];
+
+  class LoopParticle {
+    constructor(originX, originY, color, size) {
+      this.originX = originX;
+      this.originY = originY;
+      this.x = originX;
+      this.y = originY;
+      this.color = color;
+      this.size = size;
+      this.vx = 0;
+      this.vy = 0;
+    }
+
+    explode() {
+      const angle = Math.atan2(this.y - cy, this.x - cx) + (Math.random() - 0.5) * 1.2;
+      const speed = Math.random() * 4.2 + 1.8;
+      this.vx = Math.cos(angle) * speed;
+      this.vy = Math.sin(angle) * speed;
+    }
+
+    update(phaseProgress, phaseName) {
+      if (phaseName === "disintegrate") {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vx *= 0.94;
+        this.vy *= 0.94;
+
+        // Vórtice suave orbital
+        const dx = this.x - cx;
+        const dy = this.y - cy;
+        this.vx += -dy * 0.04;
+        this.vy += dx * 0.04;
+
+      } else if (phaseName === "reassemble") {
+        // Atracción magnética elástica hacia su posición exacta
+        const dx = this.originX - this.x;
+        const dy = this.originY - this.y;
+        this.vx += dx * 0.17;
+        this.vy += dy * 0.17;
+        this.vx *= 0.81;
+        this.vy *= 0.81;
+        this.x += this.vx;
+        this.y += this.vy;
+      } else {
+        // En estado sólido descansan en su origen exacto
+        this.x = this.originX;
+        this.y = this.originY;
+      }
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.shadowBlur = 5;
+      ctx.shadowColor = this.color;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  // Tokens flotantes de NLP ("delicioso", "★5", "TF-IDF", etc.)
+  class FloatingToken {
+    constructor(text, color, vx, vy) {
+      this.text = text;
+      this.color = color;
+      this.x = cx;
+      this.y = cy;
+      this.vx = vx;
+      this.vy = vy;
+      this.alpha = 0;
+    }
+
+    reset() {
+      this.x = cx;
+      this.y = cy;
+      this.alpha = 1;
+    }
+
+    update(phaseName) {
+      if (phaseName === "disintegrate") {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vx *= 0.95;
+        this.vy *= 0.95;
+        this.alpha = Math.min(1, this.alpha + 0.08);
+      } else if (phaseName === "reassemble") {
+        const dx = cx - this.x;
+        const dy = cy - this.y;
+        this.x += dx * 0.14;
+        this.y += dy * 0.14;
+        this.alpha *= 0.88;
+      } else {
+        this.alpha = 0;
+      }
+    }
+
+    draw() {
+      if (this.alpha <= 0.04) return;
+      ctx.save();
+      ctx.font = "bold 8px 'JetBrains Mono', monospace";
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = this.alpha;
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = this.color;
+      ctx.fillText(this.text, this.x, this.y);
+      ctx.restore();
+    }
+  }
+
+  const loopTokens = [
+    new FloatingToken("delicioso", "#10b981", -1.3, -0.8),
+    new FloatingToken("★ 5.0", "#f59e0b", 1.4, -1.1),
+    new FloatingToken("TF-IDF", "#ec4899", 1.1, 0.7),
+    new FloatingToken("NLP", "#38bdf8", -0.8, 1.0),
+    new FloatingToken("sabor", "#fbbf24", 0.5, -1.3)
+  ];
+
+  // Generar anclas de partículas para el emblema
+  function initAnchors() {
+    particles.length = 0;
+
+    // 1. Cúpula Cloche
+    for (let i = 0; i <= 22; i++) {
+      const angle = Math.PI + (i / 22) * Math.PI;
+      const px = cx + Math.cos(angle) * 16;
+      const py = cy + 8 + Math.sin(angle) * 14;
+      particles.push(new LoopParticle(px, py, "#f59e0b", 1.7));
+    }
+
+    // 2. Plato Base
+    for (let i = 0; i <= 18; i++) {
+      const angle = (i / 18) * Math.PI * 2;
+      const px = cx + Math.cos(angle) * 24;
+      const py = cy + 9 + Math.sin(angle) * 3;
+      particles.push(new LoopParticle(px, py, "#e2e8f0", 1.5));
+    }
+
+    // 3. Asa superior
+    for (let i = 0; i < 5; i++) {
+      const angle = (i / 5) * Math.PI * 2;
+      const px = cx + Math.cos(angle) * 2.5;
+      const py = cy - 7 + Math.sin(angle) * 2.5;
+      particles.push(new LoopParticle(px, py, "#fde68a", 1.8));
+    }
+
+    // 4. Cubiertos
+    for (let y = cy - 5; y <= cy + 13; y += 3) {
+      particles.push(new LoopParticle(cx - 30, y, "#38bdf8", 1.3));
+      particles.push(new LoopParticle(cx + 30, y, "#fbbf24", 1.3));
+    }
+
+    // 5. 5 Estrellas de Reseña
+    [-18, -9, 0, 9, 18].forEach(ox => {
+      const oy = cy - 15 - (1 - Math.abs(ox) / 22) * 3.5;
+      particles.push(new LoopParticle(cx + ox, oy, "#facc15", 2.0));
+    });
+
+    // 6. Nodos Neuronales
+    [
+      { x: cx - 18, y: cy - 2 },
+      { x: cx + 18, y: cy - 2 },
+      { x: cx - 12, y: cy - 13 },
+      { x: cx + 12, y: cy - 13 }
+    ].forEach((n, idx) => {
+      particles.push(new LoopParticle(n.x, n.y, idx % 2 === 0 ? "#818cf8" : "#ec4899", 1.9));
+    });
+
+    // 7. Espectro y texto lateral
+    for (let bar = 0; bar < 8; bar++) {
+      const bx = 168 + bar * 10;
+      const bColor = bar < 5 ? "#10b981" : (bar < 7 ? "#f59e0b" : "#ef4444");
+      const hMax = (bar % 2 === 0 ? 12 : 18);
+      for (let dotY = cy + 10; dotY >= cy + 10 - hMax; dotY -= 5) {
+        particles.push(new LoopParticle(bx, dotY, bColor, 1.3));
+      }
+    }
+  }
+
+  initAnchors();
+
+  // Dibujar emblema en estado sólido
+  function drawSolidGraphics(time) {
+    ctx.save();
+
+    // Plato base
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + 9, 24, 3.5, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(226, 232, 240, 0.9)";
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = "rgba(245, 158, 11, 0.4)";
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Cúpula Cloche dorada
+    const gradDome = ctx.createLinearGradient(cx - 16, cy - 6, cx + 16, cy + 9);
+    gradDome.addColorStop(0, "rgba(251, 191, 36, 0.9)");
+    gradDome.addColorStop(0.5, "rgba(245, 158, 11, 0.95)");
+    gradDome.addColorStop(1, "rgba(217, 119, 6, 0.85)");
+
+    ctx.beginPath();
+    ctx.arc(cx, cy + 8, 16, Math.PI, 0);
+    ctx.fillStyle = gradDome;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = "#f59e0b";
+    ctx.fill();
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = "rgba(254, 243, 199, 0.9)";
+    ctx.stroke();
+
+    // Asa
+    ctx.beginPath();
+    ctx.arc(cx, cy - 7, 2.8, 0, Math.PI * 2);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Vapor Aromático ondeando
+    for (let i = -1; i <= 1; i++) {
+      const ox = cx + i * 7;
+      const wave = Math.sin(time * 0.003 + i * 1.5) * 2;
+      ctx.beginPath();
+      ctx.moveTo(ox, cy - 8);
+      ctx.quadraticCurveTo(ox + wave, cy - 14, ox - wave, cy - 20);
+      ctx.strokeStyle = `rgba(253, 230, 138, ${0.45 + Math.sin(time * 0.004 + i) * 0.25})`;
+      ctx.lineWidth = 1.0;
+      ctx.stroke();
+    }
+
+    // Cubiertos tenedor y cuchillo
+    ctx.beginPath();
+    ctx.moveTo(cx - 30, cy - 5);
+    ctx.lineTo(cx - 30, cy + 13);
+    ctx.moveTo(cx - 32, cy - 5);
+    ctx.lineTo(cx - 32, cy);
+    ctx.moveTo(cx - 28, cy - 5);
+    ctx.lineTo(cx - 28, cy);
+    ctx.strokeStyle = "#38bdf8";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(cx + 30, cy - 5);
+    ctx.lineTo(cx + 30, cy + 13);
+    ctx.moveTo(cx + 32, cy - 2);
+    ctx.lineTo(cx + 30, cy - 5);
+    ctx.strokeStyle = "#fbbf24";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // 5 Estrellas
+    [-18, -9, 0, 9, 18].forEach((ox, idx) => {
+      const oy = cy - 15 - (1 - Math.abs(ox) / 22) * 3.5;
+      const starGlow = 0.7 + Math.sin(time * 0.004 + idx * 0.8) * 0.3;
+      ctx.font = "7.5px sans-serif";
+      ctx.fillStyle = `rgba(250, 204, 21, ${starGlow})`;
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = "#facc15";
+      ctx.fillText("★", cx + ox - 3.5, oy + 2.5);
+    });
+
+    // Nodos neuronales
+    [
+      { x: cx - 18, y: cy - 2 },
+      { x: cx + 18, y: cy - 2 },
+      { x: cx - 12, y: cy - 13 },
+      { x: cx + 12, y: cy - 13 }
+    ].forEach((n, idx) => {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, 1.8, 0, Math.PI * 2);
+      ctx.fillStyle = idx % 2 === 0 ? "#818cf8" : "#ec4899";
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = ctx.fillStyle;
+      ctx.fill();
+    });
+
+    // Textos informativos
+    ctx.shadowBlur = 0;
+    ctx.font = "bold 9px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillStyle = "#ffffff";
+    ctx.letterSpacing = "0.5px";
+    ctx.fillText("SABOR·IA NLP", 94, cy - 4);
+
+    ctx.font = "500 7px 'JetBrains Mono', monospace";
+    ctx.fillStyle = "#94a3b8";
+    ctx.fillText("ANÁLISIS DE RESEÑAS", 94, cy + 7);
+
+    // Barras de espectro de sentimiento
+    for (let bar = 0; bar < 8; bar++) {
+      const bx = 168 + bar * 10;
+      const waveVal = Math.sin(time * 0.005 + bar * 0.5) * 0.5 + 0.5;
+      const barH = 3 + waveVal * 12;
+      const barColor = bar < 5 ? "#10b981" : (bar < 7 ? "#f59e0b" : "#ef4444");
+
+      ctx.fillStyle = barColor;
+      ctx.shadowBlur = 4;
+      ctx.shadowColor = barColor;
+      ctx.beginPath();
+      ctx.roundRect(bx, cy + 14 - barH, 5.5, barH, 1.5);
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
+  // Bucle temporal en Loop Infinito (Ciclo total: 7500ms = 7.5s)
+  const CYCLE_MS = 7500;
+  let hasExplodedThisCycle = false;
+  let shockwaveR = 0;
+  let shockwaveAlpha = 0;
+
+  function renderLoopFrame(now) {
+    const cycleTime = now % CYCLE_MS;
+    ctx.clearRect(0, 0, logicalW, logicalH);
+
+    // Definición de fases del ciclo:
+    // 0ms - 2800ms: Sólido montado y respirando
+    // 2800ms - 3200ms: Carga / jitter de energía
+    // 3200ms - 4600ms: Desintegración y vórtice cuántico
+    // 4600ms - 6000ms: Reensamblaje magnético
+    // 6000ms - 6600ms: Onda de choque (shockwave) luminosa
+    // 6600ms - 7500ms: Sólido montado en reposo
+    let phaseName = "solid";
+    let jitterX = 0;
+    let jitterY = 0;
+
+    if (cycleTime < 2800) {
+      phaseName = "solid";
+      hasExplodedThisCycle = false;
+    } else if (cycleTime < 3200) {
+      phaseName = "charging";
+      jitterX = (Math.random() - 0.5) * 2;
+      jitterY = (Math.random() - 0.5) * 2;
+    } else if (cycleTime < 4600) {
+      phaseName = "disintegrate";
+      if (!hasExplodedThisCycle) {
+        hasExplodedThisCycle = true;
+        particles.forEach(p => p.explode());
+        loopTokens.forEach(t => t.reset());
+      }
+    } else if (cycleTime < 6000) {
+      phaseName = "reassemble";
+    } else if (cycleTime < 6600) {
+      phaseName = "shockwave";
+      if (shockwaveAlpha <= 0.05 && cycleTime < 6150) {
+        shockwaveR = 4;
+        shockwaveAlpha = 1;
+      }
+    } else {
+      phaseName = "solid";
+    }
+
+    ctx.save();
+    if (jitterX !== 0 || jitterY !== 0) {
+      ctx.translate(jitterX, jitterY);
+    }
+
+    if (phaseName === "solid" || phaseName === "charging") {
+      drawSolidGraphics(now);
+    } else {
+      // Partículas en vuelo o retorno magnético
+      for (let p of particles) {
+        p.update(0, phaseName);
+        p.draw();
+      }
+
+      // Tokens flotantes de NLP
+      for (let token of loopTokens) {
+        token.update(phaseName);
+        token.draw();
+      }
+
+      // Onda expansiva en Shockwave
+      if (phaseName === "shockwave") {
+        if (shockwaveAlpha > 0.04) {
+          ctx.beginPath();
+          ctx.arc(cx, cy, shockwaveR, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(245, 158, 11, ${shockwaveAlpha})`;
+          ctx.lineWidth = 2.4;
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = "#f59e0b";
+          ctx.stroke();
+
+          shockwaveR += 3.2;
+          shockwaveAlpha -= 0.045;
+        }
+
+        ctx.globalAlpha = Math.min(1, 1 - shockwaveAlpha * 0.7);
+        drawSolidGraphics(now);
+        ctx.globalAlpha = 1.0;
+      }
+    }
+
+    ctx.restore();
+    requestAnimationFrame(renderLoopFrame);
+  }
+
+  requestAnimationFrame(renderLoopFrame);
 }
 
 
