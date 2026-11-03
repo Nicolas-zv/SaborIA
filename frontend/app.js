@@ -603,8 +603,9 @@ let particleColorTheme = {
 
 function initVisualEffects() {
   initCursorSpotlight();
-  initCardSpotlightAndTilt();
+  initCardSpotlight();
   initInteractiveCanvas();
+  initHologramReactor();
 }
 
 // 1. Cursor Spotlight Follower
@@ -623,7 +624,6 @@ function initCursorSpotlight() {
   });
 
   function renderCursor() {
-    // Interpolación suave (lerp)
     curX += (mouseX - curX) * 0.12;
     curY += (mouseY - curY) * 0.12;
 
@@ -635,8 +635,8 @@ function initCursorSpotlight() {
   renderCursor();
 }
 
-// 2. Card Spotlight & 3D Tilt Reactivo
-function initCardSpotlightAndTilt() {
+// 2. Card Spotlight (Borde perimetral interactivo 2D, TOTALMENTE PLANO y SIN distorsión 3D)
+function initCardSpotlight() {
   const cards = document.querySelectorAll(".glass-card, .kpi-card, .pipeline-step-card");
 
   cards.forEach(card => {
@@ -647,18 +647,11 @@ function initCardSpotlightAndTilt() {
 
       card.style.setProperty("--mouse-x", `${x}px`);
       card.style.setProperty("--mouse-y", `${y}px`);
-
-      // 3D Tilt suave
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      const rotateX = ((y - centerY) / centerY) * -3.5;
-      const rotateY = ((x - centerX) / centerX) * 3.5;
-
-      card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-3px)`;
     });
 
     card.addEventListener("mouseleave", () => {
-      card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)";
+      card.style.setProperty("--mouse-x", "-500px");
+      card.style.setProperty("--mouse-y", "-500px");
     });
   });
 }
@@ -832,4 +825,587 @@ function resetAtmosphereTheme() {
   if (glowBottom) glowBottom.style.background = "radial-gradient(circle, #ec4899 0%, rgba(244, 63, 94, 0.5) 40%, transparent 70%)";
   if (cursor) cursor.style.background = "radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.08) 35%, transparent 70%)";
 }
+
+// 5. Reactor Holográfico Cuántico: Emblema Gastronómico con Desintegración y Reconstrucción en Barra
+function initHologramReactor() {
+  const canvas = document.getElementById("reactor-hologram-canvas");
+  const wrapper = document.getElementById("reactor-canvas-wrapper");
+  const btnTrigger = document.getElementById("btn-trigger-disintegrate");
+  const btnText = document.getElementById("reactor-btn-text");
+  const statusText = document.getElementById("reactor-status-text");
+  const statusDot = document.querySelector(".reactor-status-dot");
+  const brandInteractive = document.getElementById("brand-interactive");
+  const brandIconBase = document.getElementById("brand-icon-base");
+
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 2;
+  const logicalW = 300;
+  const logicalH = 64;
+
+  canvas.width = logicalW * dpr;
+  canvas.height = logicalH * dpr;
+  ctx.scale(dpr, dpr);
+
+  const cx = 56;  // Centro del emblema gastronómico
+  const cy = 32;
+
+  // Estado del Reactor: "assembled" | "charging" | "disintegrating" | "vortex" | "magnetic" | "shockwave"
+  let reactorState = "assembled";
+  let stateStartTime = performance.now();
+  let shockwaveR = 0;
+  let shockwaveAlpha = 0;
+  let flashAlpha = 0;
+  let shakeX = 0;
+  let shakeY = 0;
+
+  // Paleta de partículas cuánticas (ámbar culinario, neón cian, púrpura IA, magenta, esmeralda, destello blanco)
+  const colors = ["#f59e0b", "#fbbf24", "#38bdf8", "#818cf8", "#ec4899", "#10b981", "#ffffff"];
+
+  // Generador de mapa de anclaje (Target Anchors) para el emblema y visualizador
+  const particles = [];
+
+  class ReactorParticle {
+    constructor(originX, originY, color, size, layer = "emblem") {
+      this.originX = originX;
+      this.originY = originY;
+      this.x = originX;
+      this.y = originY;
+      this.color = color || colors[Math.floor(Math.random() * colors.length)];
+      this.size = size || (Math.random() * 1.6 + 1.2);
+      this.vx = 0;
+      this.vy = 0;
+      this.layer = layer;
+      this.alpha = 1;
+      this.trail = [];
+    }
+
+    explode(centerX, centerY) {
+      const angle = Math.atan2(this.y - centerY, this.x - centerX) + (Math.random() - 0.5) * 1.1;
+      const speed = Math.random() * 4.8 + 2.2;
+      this.vx = Math.cos(angle) * speed;
+      this.vy = Math.sin(angle) * speed;
+      this.trail = [];
+    }
+
+    updatePhysics(phase) {
+      if (phase === "disintegrating" || phase === "vortex") {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vx *= 0.94;
+        this.vy *= 0.94;
+
+        // Fuerza de remolino orbital en vórtice
+        if (phase === "vortex") {
+          const dx = this.x - cx;
+          const dy = this.y - cy;
+          this.vx += -dy * 0.045;
+          this.vy += dx * 0.045;
+        }
+
+        // Rebote elástico suave en bordes del canvas
+        if (this.x < 4 || this.x > logicalW - 4) this.vx *= -0.7;
+        if (this.y < 4 || this.y > logicalH - 4) this.vy *= -0.7;
+
+      } else if (phase === "magnetic") {
+        // Atracción gravitacional / resorte hacia su anclaje exacto
+        const dx = this.originX - this.x;
+        const dy = this.originY - this.y;
+        this.vx += dx * 0.18;
+        this.vy += dy * 0.18;
+        this.vx *= 0.81;
+        this.vy *= 0.81;
+        this.x += this.vx;
+        this.y += this.vy;
+      } else {
+        // Assembled / Idle: pequeña oscilación cuántica sutil
+        this.x = this.originX;
+        this.y = this.originY;
+      }
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.shadowBlur = 5;
+      ctx.shadowColor = this.color;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  // Tokens flotantes de NLP ("delicioso", "★5", "TF-IDF", etc.)
+  let nlpTokens = [];
+
+  class NlpFloatToken {
+    constructor(text, color, vx, vy) {
+      this.text = text;
+      this.color = color;
+      this.x = cx;
+      this.y = cy;
+      this.vx = vx;
+      this.vy = vy;
+      this.alpha = 1;
+      this.scale = 1;
+    }
+
+    update(phase) {
+      if (phase === "disintegrating" || phase === "vortex") {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vx *= 0.95;
+        this.vy *= 0.95;
+        this.scale = Math.min(1.2, this.scale + 0.01);
+      } else if (phase === "magnetic") {
+        const dx = cx - this.x;
+        const dy = cy - this.y;
+        this.x += dx * 0.15;
+        this.y += dy * 0.15;
+        this.scale *= 0.92;
+        this.alpha *= 0.90;
+      }
+    }
+
+    draw() {
+      if (this.alpha <= 0.05) return;
+      ctx.save();
+      ctx.font = `bold ${Math.round(8.5 * this.scale)}px 'JetBrains Mono', monospace`;
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = this.alpha;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = this.color;
+      ctx.fillText(this.text, this.x, this.y);
+      ctx.restore();
+    }
+  }
+
+  // Inicializar puntos de anclaje geométrico del emblema y visualizador
+  function generateParticleAnchors() {
+    particles.length = 0;
+
+    // 1. Cúpula Cloche Gourmet (Arco semicircular)
+    const domeRadius = 18;
+    for (let i = 0; i <= 24; i++) {
+      const angle = Math.PI + (i / 24) * Math.PI;
+      const px = cx + Math.cos(angle) * domeRadius;
+      const py = cy + 10 + Math.sin(angle) * (domeRadius * 0.92);
+      particles.push(new ReactorParticle(px, py, "#f59e0b", 1.8, "dome"));
+    }
+
+    // 2. Plato base (Elipse horizontal)
+    for (let i = 0; i <= 20; i++) {
+      const angle = (i / 20) * Math.PI * 2;
+      const px = cx + Math.cos(angle) * 28;
+      const py = cy + 11 + Math.sin(angle) * 3.5;
+      particles.push(new ReactorParticle(px, py, "#e2e8f0", 1.6, "plate"));
+    }
+
+    // 3. Asa del Cloche (Pequeña perla dorada en la cima)
+    for (let i = 0; i < 6; i++) {
+      const angle = (i / 6) * Math.PI * 2;
+      const px = cx + Math.cos(angle) * 2.8;
+      const py = cy - 8 + Math.sin(angle) * 2.8;
+      particles.push(new ReactorParticle(px, py, "#fde68a", 1.9, "handle"));
+    }
+
+    // 4. Cubiertos holográficos (Tenedor a la izquierda, Cuchillo a la derecha)
+    // Tenedor (cx - 36)
+    for (let y = cy - 6; y <= cy + 16; y += 3) {
+      particles.push(new ReactorParticle(cx - 35, y, "#38bdf8", 1.4, "cutlery"));
+    }
+    particles.push(new ReactorParticle(cx - 38, cy - 9, "#38bdf8", 1.4, "cutlery"));
+    particles.push(new ReactorParticle(cx - 35, cy - 10, "#38bdf8", 1.4, "cutlery"));
+    particles.push(new ReactorParticle(cx - 32, cy - 9, "#38bdf8", 1.4, "cutlery"));
+
+    // Cuchillo (cx + 36)
+    for (let y = cy - 8; y <= cy + 16; y += 3) {
+      particles.push(new ReactorParticle(cx + 35, y, "#fbbf24", 1.4, "cutlery"));
+    }
+    particles.push(new ReactorParticle(cx + 37, cy - 5, "#fbbf24", 1.3, "cutlery"));
+
+    // 5. Estrellas de Reseña (5 micro-estrellas arqueadas sobre el plato)
+    const starOffsets = [-22, -11, 0, 11, 22];
+    starOffsets.forEach(ox => {
+      const oy = cy - 18 - (1 - Math.abs(ox) / 28) * 4;
+      particles.push(new ReactorParticle(cx + ox, oy, "#facc15", 2.2, "star"));
+    });
+
+    // 6. Nodos de Red Neuronal / Synapses NLP
+    const neuralNodes = [
+      { x: cx - 22, y: cy - 2 },
+      { x: cx + 22, y: cy - 2 },
+      { x: cx - 14, y: cy - 16 },
+      { x: cx + 14, y: cy - 16 },
+      { x: cx, y: cy + 3 }
+    ];
+    neuralNodes.forEach(n => {
+      particles.push(new ReactorParticle(n.x, n.y, "#818cf8", 2.0, "neural"));
+    });
+
+    // 7. Vapor Aromático (Partículas ondulantes)
+    for (let i = 0; i < 9; i++) {
+      const ox = (i % 3 - 1) * 8;
+      const oy = cy - 12 - (Math.floor(i / 3) * 6);
+      particles.push(new ReactorParticle(cx + ox, oy, "#fde68a", 1.2, "steam"));
+    }
+
+    // 8. Visualizador de Espectro NLP en el lado derecho (x: 114 a 286)
+    const rightStartX = 118;
+    for (let bar = 0; bar < 12; bar++) {
+      const bx = rightStartX + bar * 14;
+      const barColor = bar < 7 ? "#10b981" : (bar < 10 ? "#f59e0b" : "#ef4444");
+      const hMax = (bar % 3 === 0 ? 18 : (bar % 2 === 0 ? 14 : 22));
+      for (let dotY = cy + 14; dotY >= cy + 14 - hMax; dotY -= 5) {
+        particles.push(new ReactorParticle(bx, dotY, barColor, 1.4, "spectrum"));
+      }
+    }
+  }
+
+  generateParticleAnchors();
+
+  // Función de disparo del ciclo de desintegración & reconstrucción
+  function triggerDisintegration() {
+    if (reactorState !== "assembled") return;
+
+    reactorState = "charging";
+    stateStartTime = performance.now();
+
+    if (btnText) btnText.textContent = "Sobrecarga...";
+    if (statusText) statusText.textContent = "⚡ Sobrecarga Cuántica...";
+    if (statusDot) statusDot.style.background = "#ec4899";
+
+    // Efecto sutil en el icono de marca adyacente
+    if (brandIconBase) {
+      brandIconBase.style.transform = "scale(0.88)";
+      brandIconBase.style.opacity = "0.4";
+    }
+
+    // Fase 1: Carga/Glitch por 200ms -> Detonación
+    setTimeout(() => {
+      reactorState = "disintegrating";
+      stateStartTime = performance.now();
+
+      if (btnText) btnText.textContent = "Desintegrando...";
+      if (statusText) statusText.textContent = "💥 Desintegración: 200 Partículas NLP";
+      if (statusDot) statusDot.style.background = "#ef4444";
+
+      // Dispersión explosiva de las partículas
+      particles.forEach(p => p.explode(cx, cy));
+
+      // Crear tokens flotantes de NLP
+      nlpTokens = [
+        new NlpFloatToken("delicioso", "#10b981", -1.4, -0.9),
+        new NlpFloatToken("★ 5.0", "#f59e0b", 1.5, -1.2),
+        new NlpFloatToken("TF-IDF", "#ec4899", 1.2, 0.8),
+        new NlpFloatToken("NLP", "#38bdf8", -0.9, 1.1),
+        new NlpFloatToken("LogReg", "#818cf8", -1.5, 0.3),
+        new NlpFloatToken("sabor", "#fbbf24", 0.6, -1.4)
+      ];
+
+      // Fase 2: Vórtice Cuántico a los 550ms
+      setTimeout(() => {
+        if (reactorState === "disintegrating") {
+          reactorState = "vortex";
+          if (btnText) btnText.textContent = "Vórtice...";
+          if (statusText) statusText.textContent = "🌀 Vórtice de Datos en Órbita...";
+        }
+      }, 500);
+
+      // Fase 3: Atracción Magnética / Reensamblaje a los 1150ms
+      setTimeout(() => {
+        reactorState = "magnetic";
+        if (btnText) btnText.textContent = "Reensamblando...";
+        if (statusText) statusText.textContent = "🧲 Reconstrucción Magnética...";
+        if (statusDot) statusDot.style.background = "#38bdf8";
+      }, 1150);
+
+      // Fase 4: Impacto & Onda Expansiva (Shockwave) a los 1750ms
+      setTimeout(() => {
+        reactorState = "shockwave";
+        shockwaveR = 6;
+        shockwaveAlpha = 1;
+        flashAlpha = 0.75;
+
+        if (btnText) btnText.textContent = "¡Completado!";
+        if (statusText) statusText.textContent = "✨ Emblema Reconstruido al 100%";
+        if (statusDot) statusDot.style.background = "#10b981";
+
+        if (brandIconBase) {
+          brandIconBase.style.transform = "scale(1)";
+          brandIconBase.style.opacity = "1";
+        }
+
+        // Fin del ciclo y regreso a Assembled
+        setTimeout(() => {
+          reactorState = "assembled";
+          if (btnText) btnText.textContent = "Desintegrar";
+          setTimeout(() => {
+            if (statusText && reactorState === "assembled") {
+              statusText.textContent = "Núcleo NLP Activo • 800 Tokens";
+              if (statusDot) statusDot.style.background = "#f59e0b";
+            }
+          }, 2400);
+        }, 600);
+
+      }, 1750);
+
+    }, 220);
+  }
+
+  // Renderizado del Emblema Assembled (Dibujo vectorial fino con gradientes)
+  function drawAssembledGraphics(time) {
+    ctx.save();
+
+    // 1. Plato Base Gourmet
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + 11, 28, 4, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(226, 232, 240, 0.85)";
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = "rgba(245, 158, 11, 0.4)";
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // 2. Cúpula Cloche
+    const gradDome = ctx.createLinearGradient(cx - 20, cy - 8, cx + 20, cy + 10);
+    gradDome.addColorStop(0, "rgba(251, 191, 36, 0.85)");
+    gradDome.addColorStop(0.5, "rgba(245, 158, 11, 0.95)");
+    gradDome.addColorStop(1, "rgba(217, 119, 6, 0.8)");
+
+    ctx.beginPath();
+    ctx.arc(cx, cy + 10, 19, Math.PI, 0);
+    ctx.fillStyle = gradDome;
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = "#f59e0b";
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Borde brillante de la cúpula
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = "rgba(254, 243, 199, 0.9)";
+    ctx.stroke();
+
+    // Asa del Cloche
+    ctx.beginPath();
+    ctx.arc(cx, cy - 9, 3.2, 0, Math.PI * 2);
+    ctx.fillStyle = "#fff";
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = "#fff";
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // 3. Ondas de Vapor Aromático oscilando con el tiempo
+    for (let i = -1; i <= 1; i++) {
+      const ox = cx + i * 8;
+      const wave = Math.sin(time * 0.003 + i * 1.5) * 2.5;
+      ctx.beginPath();
+      ctx.moveTo(ox, cy - 11);
+      ctx.quadraticCurveTo(ox + wave, cy - 18, ox - wave, cy - 24);
+      ctx.strokeStyle = `rgba(253, 230, 138, ${0.45 + Math.sin(time * 0.004 + i) * 0.25})`;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+    }
+
+    // 4. Cubiertos Tenores y Cuchillo
+    // Tenedor
+    ctx.beginPath();
+    ctx.moveTo(cx - 35, cy - 8);
+    ctx.lineTo(cx - 35, cy + 15);
+    ctx.moveTo(cx - 38, cy - 8);
+    ctx.lineTo(cx - 38, cy - 2);
+    ctx.moveTo(cx - 32, cy - 8);
+    ctx.lineTo(cx - 32, cy - 2);
+    ctx.strokeStyle = "#38bdf8";
+    ctx.lineWidth = 1.4;
+    ctx.shadowBlur = 6;
+    ctx.shadowColor = "#38bdf8";
+    ctx.stroke();
+
+    // Cuchillo
+    ctx.beginPath();
+    ctx.moveTo(cx + 35, cy - 8);
+    ctx.lineTo(cx + 35, cy + 15);
+    ctx.moveTo(cx + 37, cy - 4);
+    ctx.lineTo(cx + 35, cy - 8);
+    ctx.strokeStyle = "#fbbf24";
+    ctx.lineWidth = 1.4;
+    ctx.shadowBlur = 6;
+    ctx.shadowColor = "#fbbf24";
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // 5. Estrellas de Reseña (5★ con resplandor)
+    const starOffsets = [-22, -11, 0, 11, 22];
+    starOffsets.forEach((ox, idx) => {
+      const oy = cy - 18 - (1 - Math.abs(ox) / 28) * 4;
+      const starGlow = 0.7 + Math.sin(time * 0.004 + idx * 0.8) * 0.3;
+      ctx.font = "8px sans-serif";
+      ctx.fillStyle = `rgba(250, 204, 21, ${starGlow})`;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = "#facc15";
+      ctx.fillText("★", cx + ox - 4, oy + 3);
+    });
+
+    // 6. Nodos y Conexiones Neuronales
+    const nodes = [
+      { x: cx - 22, y: cy - 2 },
+      { x: cx + 22, y: cy - 2 },
+      { x: cx - 14, y: cy - 16 },
+      { x: cx + 14, y: cy - 16 }
+    ];
+
+    ctx.beginPath();
+    ctx.moveTo(nodes[0].x, nodes[0].y);
+    ctx.lineTo(nodes[2].x, nodes[2].y);
+    ctx.lineTo(nodes[3].x, nodes[3].y);
+    ctx.lineTo(nodes[1].x, nodes[1].y);
+    ctx.strokeStyle = "rgba(129, 140, 248, 0.4)";
+    ctx.lineWidth = 0.9;
+    ctx.stroke();
+
+    nodes.forEach((n, idx) => {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, 2, 0, Math.PI * 2);
+      ctx.fillStyle = idx % 2 === 0 ? "#818cf8" : "#ec4899";
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = ctx.fillStyle;
+      ctx.fill();
+    });
+
+    // 7. Textos y Métricas en el lado derecho
+    ctx.shadowBlur = 0;
+    ctx.font = "bold 9px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillStyle = "#ffffff";
+    ctx.letterSpacing = "0.5px";
+    ctx.fillText("SABOR·IA NLP CORE", 120, cy - 8);
+
+    ctx.font = "500 7.5px 'JetBrains Mono', monospace";
+    ctx.fillStyle = "#94a3b8";
+    ctx.fillText("TF-IDF 800 N-GRAMS • REG. LOGÍSTICA", 120, cy + 3);
+
+    // 8. Barras de Espectro Dinámico de Sentimiento
+    const rightStartX = 120;
+    const barWidth = 7;
+    const barGap = 6;
+    for (let bar = 0; bar < 12; bar++) {
+      const bx = rightStartX + bar * (barWidth + barGap);
+      const waveVal = Math.sin(time * 0.005 + bar * 0.45) * 0.5 + 0.5;
+      const barH = 4 + waveVal * 14;
+      const barColor = bar < 7 ? "#10b981" : (bar < 10 ? "#f59e0b" : "#ef4444");
+
+      ctx.fillStyle = barColor;
+      ctx.shadowBlur = 4;
+      ctx.shadowColor = barColor;
+      ctx.beginPath();
+      ctx.roundRect(bx, cy + 22 - barH, barWidth, barH, 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
+  // Bucle de animación continuo (60 FPS)
+  function animateFrame(now) {
+    ctx.clearRect(0, 0, logicalW, logicalH);
+
+    // Glitch / vibración en estado Charging
+    if (reactorState === "charging") {
+      shakeX = (Math.random() - 0.5) * 4;
+      shakeY = (Math.random() - 0.5) * 4;
+    } else {
+      shakeX = 0;
+      shakeY = 0;
+    }
+
+    ctx.save();
+    if (shakeX !== 0 || shakeY !== 0) {
+      ctx.translate(shakeX, shakeY);
+    }
+
+    if (reactorState === "assembled") {
+      // Estado normal: dibujo vectorial fino + ligeras partículas cuánticas de halo
+      drawAssembledGraphics(now);
+
+    } else if (reactorState === "charging") {
+      // Estado de carga: dibujo con aberración cromática
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = "#38bdf8";
+      ctx.fillRect(cx - 30, cy - 20, 60, 40);
+      drawAssembledGraphics(now);
+      ctx.globalAlpha = 1.0;
+
+    } else {
+      // Estados de Desintegración, Vórtice y Reconstrucción Cuántica
+      for (let p of particles) {
+        p.updatePhysics(reactorState);
+        p.draw();
+      }
+
+      // Dibujar tokens NLP flotantes
+      for (let token of nlpTokens) {
+        token.update(reactorState);
+        token.draw();
+      }
+
+      // Onda expansiva luminosa en Shockwave
+      if (reactorState === "shockwave" && shockwaveAlpha > 0.02) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, shockwaveR, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(245, 158, 11, ${shockwaveAlpha})`;
+        ctx.lineWidth = 2.8;
+        ctx.shadowBlur = 16;
+        ctx.shadowColor = "#f59e0b";
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, shockwaveR * 0.65, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(56, 189, 248, ${shockwaveAlpha * 0.8})`;
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+
+        shockwaveR += 3.8;
+        shockwaveAlpha -= 0.05;
+
+        // Reincorporación progresiva de gráficos montados
+        ctx.globalAlpha = Math.min(1, 1 - shockwaveAlpha * 0.8);
+        drawAssembledGraphics(now);
+        ctx.globalAlpha = 1.0;
+      }
+    }
+
+    // Flash suave de luz
+    if (flashAlpha > 0.02) {
+      ctx.fillStyle = `rgba(255, 255, 255, ${flashAlpha})`;
+      ctx.fillRect(0, 0, logicalW, logicalH);
+      flashAlpha -= 0.04;
+    }
+
+    ctx.restore();
+    requestAnimationFrame(animateFrame);
+  }
+
+  requestAnimationFrame(animateFrame);
+
+  // Escuchadores de eventos para interactividad
+  if (btnTrigger) {
+    btnTrigger.addEventListener("click", triggerDisintegration);
+  }
+
+  if (wrapper) {
+    wrapper.addEventListener("click", triggerDisintegration);
+  }
+
+  if (brandInteractive) {
+    brandInteractive.addEventListener("click", triggerDisintegration);
+  }
+
+  // Activación automática cíclica cada 12 segundos
+  setInterval(() => {
+    if (reactorState === "assembled" && document.visibilityState === "visible") {
+      triggerDisintegration();
+    }
+  }, 12000);
+}
+
 
