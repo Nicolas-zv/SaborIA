@@ -57,6 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
   checkApiHealth();
   renderMetrics(METRICAS_FALLBACK);
   renderErrorCases(ERRORES_FALLBACK);
+  initVisualEffects();
 });
 
 /* ==========================================================================
@@ -152,6 +153,7 @@ function setupPresets() {
       document.getElementById("char-counter").textContent = "0 caracteres";
       document.getElementById("result-placeholder").classList.remove("hidden");
       document.getElementById("result-display").classList.add("hidden");
+      resetAtmosphereTheme();
     });
   }
 }
@@ -229,6 +231,7 @@ function renderResultadoInferencia(data) {
     badge.classList.add("badge-neutral");
     icon.textContent = "⚖️";
   }
+  updateAtmosphereTheme(sent);
 
   // Actualizar barras de probabilidades
   const probs = data.probabilidades || { positivo: 0.33, neutral: 0.33, negativo: 0.33 };
@@ -587,3 +590,246 @@ function escapeHtml(text) {
   const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
   return String(text).replace(/[&<>"']/g, m => map[m]);
 }
+
+/* ==========================================================================
+   Visual Effects: Canvas Partículas Reactivas, Cursor Spotlight y 3D Tilt
+   ========================================================================== */
+let canvasAnimationId = null;
+let particleColorTheme = {
+  primary: "rgba(99, 102, 241, ",
+  secondary: "rgba(168, 85, 247, ",
+  glowHex: "#6366f1"
+};
+
+function initVisualEffects() {
+  initCursorSpotlight();
+  initCardSpotlightAndTilt();
+  initInteractiveCanvas();
+}
+
+// 1. Cursor Spotlight Follower
+function initCursorSpotlight() {
+  const cursor = document.getElementById("cursor-glow");
+  if (!cursor) return;
+
+  let mouseX = window.innerWidth / 2;
+  let mouseY = window.innerHeight / 2;
+  let curX = mouseX;
+  let curY = mouseY;
+
+  window.addEventListener("mousemove", (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  function renderCursor() {
+    // Interpolación suave (lerp)
+    curX += (mouseX - curX) * 0.12;
+    curY += (mouseY - curY) * 0.12;
+
+    cursor.style.left = `${curX}px`;
+    cursor.style.top = `${curY}px`;
+
+    requestAnimationFrame(renderCursor);
+  }
+  renderCursor();
+}
+
+// 2. Card Spotlight & 3D Tilt Reactivo
+function initCardSpotlightAndTilt() {
+  const cards = document.querySelectorAll(".glass-card, .kpi-card, .pipeline-step-card");
+
+  cards.forEach(card => {
+    card.addEventListener("mousemove", (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      card.style.setProperty("--mouse-x", `${x}px`);
+      card.style.setProperty("--mouse-y", `${y}px`);
+
+      // 3D Tilt suave
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rotateX = ((y - centerY) / centerY) * -3.5;
+      const rotateY = ((x - centerX) / centerX) * 3.5;
+
+      card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-3px)`;
+    });
+
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)";
+    });
+  });
+}
+
+// 3. Canvas de Fondo con Partículas Conectadas y Física de Repulsión
+function initInteractiveCanvas() {
+  const canvas = document.getElementById("bg-canvas");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  let width = (canvas.width = window.innerWidth);
+  let height = (canvas.height = window.innerHeight);
+
+  window.addEventListener("resize", () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+
+  const mouse = { x: -1000, y: -1000, radius: 150 };
+
+  window.addEventListener("mousemove", (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+
+  window.addEventListener("mouseleave", () => {
+    mouse.x = -1000;
+    mouse.y = -1000;
+  });
+
+  // Crear partículas
+  const numParticles = Math.min(Math.floor((width * height) / 22000), 55);
+  const particles = [];
+
+  class Particle {
+    constructor() {
+      this.x = Math.random() * width;
+      this.y = Math.random() * height;
+      this.size = Math.random() * 2.2 + 1;
+      this.baseX = this.x;
+      this.baseY = this.y;
+      this.density = Math.random() * 20 + 2;
+      this.vx = (Math.random() - 0.5) * 0.6;
+      this.vy = (Math.random() - 0.5) * 0.6;
+      this.alpha = Math.random() * 0.5 + 0.3;
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = `${particleColorTheme.primary}${this.alpha})`;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = particleColorTheme.glowHex;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    update() {
+      // Movimiento autónomo suave
+      this.x += this.vx;
+      this.y += this.vy;
+
+      if (this.x < 0 || this.x > width) this.vx *= -1;
+      if (this.y < 0 || this.y > height) this.vy *= -1;
+
+      // Interacción con el cursor (repulsión elástica)
+      const dx = mouse.x - this.x;
+      const dy = mouse.y - this.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < mouse.radius) {
+        const forceDirectionX = dx / distance;
+        const forceDirectionY = dy / distance;
+        const maxDistance = mouse.radius;
+        const force = (maxDistance - distance) / maxDistance;
+        const directionX = forceDirectionX * force * this.density * 0.6;
+        const directionY = forceDirectionY * force * this.density * 0.6;
+
+        this.x -= directionX;
+        this.y -= directionY;
+      }
+    }
+  }
+
+  for (let i = 0; i < numParticles; i++) {
+    particles.push(new Particle());
+  }
+
+  function connectParticles() {
+    for (let a = 0; a < particles.length; a++) {
+      for (let b = a + 1; b < particles.length; b++) {
+        const dx = particles[a].x - particles[b].x;
+        const dy = particles[a].y - particles[b].y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < 130) {
+          const opacity = (1 - distance / 130) * 0.22;
+          ctx.strokeStyle = `${particleColorTheme.primary}${opacity})`;
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.moveTo(particles[a].x, particles[a].y);
+          ctx.lineTo(particles[b].x, particles[b].y);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+
+    for (let i = 0; i < particles.length; i++) {
+      particles[i].draw();
+      particles[i].update();
+    }
+    connectParticles();
+
+    canvasAnimationId = requestAnimationFrame(animate);
+  }
+
+  animate();
+}
+
+// 4. Reacción Dinámica de Iluminación Ambiental según el Sentimiento
+function updateAtmosphereTheme(sentiment) {
+  const glowTop = document.querySelector(".background-glow.top-left");
+  const glowBottom = document.querySelector(".background-glow.bottom-right");
+  const cursor = document.getElementById("cursor-glow");
+
+  if (sentiment === "positivo") {
+    particleColorTheme = {
+      primary: "rgba(16, 185, 129, ",
+      secondary: "rgba(52, 211, 153, ",
+      glowHex: "#10b981"
+    };
+    if (glowTop) glowTop.style.background = "radial-gradient(circle, #059669 0%, rgba(16, 185, 129, 0.4) 40%, transparent 70%)";
+    if (glowBottom) glowBottom.style.background = "radial-gradient(circle, #10b981 0%, rgba(52, 211, 153, 0.3) 40%, transparent 70%)";
+    if (cursor) cursor.style.background = "radial-gradient(circle, rgba(16, 185, 129, 0.22) 0%, rgba(52, 211, 153, 0.08) 40%, transparent 70%)";
+  } else if (sentiment === "negativo") {
+    particleColorTheme = {
+      primary: "rgba(239, 68, 68, ",
+      secondary: "rgba(248, 113, 113, ",
+      glowHex: "#ef4444"
+    };
+    if (glowTop) glowTop.style.background = "radial-gradient(circle, #dc2626 0%, rgba(239, 68, 68, 0.4) 40%, transparent 70%)";
+    if (glowBottom) glowBottom.style.background = "radial-gradient(circle, #ef4444 0%, rgba(244, 63, 94, 0.3) 40%, transparent 70%)";
+    if (cursor) cursor.style.background = "radial-gradient(circle, rgba(239, 68, 68, 0.22) 0%, rgba(248, 113, 113, 0.08) 40%, transparent 70%)";
+  } else {
+    particleColorTheme = {
+      primary: "rgba(245, 158, 11, ",
+      secondary: "rgba(251, 191, 36, ",
+      glowHex: "#f59e0b"
+    };
+    if (glowTop) glowTop.style.background = "radial-gradient(circle, #d97706 0%, rgba(245, 158, 11, 0.4) 40%, transparent 70%)";
+    if (glowBottom) glowBottom.style.background = "radial-gradient(circle, #f59e0b 0%, rgba(251, 191, 36, 0.3) 40%, transparent 70%)";
+    if (cursor) cursor.style.background = "radial-gradient(circle, rgba(245, 158, 11, 0.22) 0%, rgba(251, 191, 36, 0.08) 40%, transparent 70%)";
+  }
+}
+
+function resetAtmosphereTheme() {
+  particleColorTheme = {
+    primary: "rgba(99, 102, 241, ",
+    secondary: "rgba(168, 85, 247, ",
+    glowHex: "#6366f1"
+  };
+  const glowTop = document.querySelector(".background-glow.top-left");
+  const glowBottom = document.querySelector(".background-glow.bottom-right");
+  const cursor = document.getElementById("cursor-glow");
+
+  if (glowTop) glowTop.style.background = "radial-gradient(circle, #6366f1 0%, rgba(139, 92, 246, 0.6) 40%, transparent 70%)";
+  if (glowBottom) glowBottom.style.background = "radial-gradient(circle, #ec4899 0%, rgba(244, 63, 94, 0.5) 40%, transparent 70%)";
+  if (cursor) cursor.style.background = "radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.08) 35%, transparent 70%)";
+}
+
