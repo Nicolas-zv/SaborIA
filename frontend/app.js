@@ -183,7 +183,7 @@ async function ejecutarPrediccion(texto) {
   btn.innerHTML = `<span class="btn-icon">⏳</span> Evaluando...`;
 
   try {
-    const res = await fetch(`${API_BASE}/predict`, {
+      const res = await fetch(`${API_BASE}/predict/logistic`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ texto }),
@@ -337,7 +337,7 @@ function setupBatch() {
       btnBatchPredict.textContent = "Procesando Lote...";
 
       try {
-        const res = await fetch(`${API_BASE}/predict/batch`, {
+          const res = await fetch(`${API_BASE}/predict/logistic/batch`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ textos: lines }),
